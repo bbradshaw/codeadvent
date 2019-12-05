@@ -1,19 +1,19 @@
 
 function checkIncrementing(n){
-    const s = n.toString();
-    if ( typeof checkIncrementing.banned == 'undefined' ) {
-        checkIncrementing.banned = new Map();
+    if ( typeof checkIncrementing.decrements == 'undefined' ) {
+        checkIncrementing.decrements = new Map();
         for (let j = 0; j < 10; j++){
-            checkIncrementing.banned[j] = [];
+            checkIncrementing.decrements[j] = [];
             for (let k = 0; k < j; k++)
-                checkIncrementing.banned[j].push(k);
+                checkIncrementing.decrements[j].push(k);
         }
     }
-    for (let i = 1; i < s.length; i++){
-        const first = s.substring(0,i);
-        const second = s.substr(i);
-        const high = Math.max(...first);
-        if (checkIncrementing.banned[high].some(x => second.includes(x)))
+
+    const s = n.toString();
+    for (let i = 0; i < s.length; i++){
+        const check = s.substr(i+1);
+        const digit = s[i];
+        if (checkIncrementing.decrements[digit].some(x => check.includes(x)))
             return false;
     }
     return true;
@@ -50,5 +50,5 @@ function two(problem){
     return matches.length;
 }
 
-//console.log(one("264360-746325"));
+console.log(one("264360-746325"));
 console.log(two("264360-746325"));
