@@ -63,11 +63,19 @@ function one(problem){
     let tree = createTree(problem);
     let lookup = new leafFinder(tree);
     let sum = 0;
+    let scores = new Map();
     for (let obj of tree){
+        let subtotal = 0;
         while (obj.orbits != null){
-            sum += 1;
+            subtotal += 1;
             obj = lookup.get(obj.orbits);
+            if (scores.has(obj.name)){
+                subtotal += scores[obj.name];
+                break;
+            }
         }
+        scores[obj.name] = subtotal;
+        sum += subtotal;
     }
     return sum;
 }
@@ -95,5 +103,5 @@ function two(problem){
     return total_distance;
 }
 
-//console.log(one(input));
-console.log(two(input));
+console.log(one(input));
+//console.log(two(input));
