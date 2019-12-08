@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <title>Day 08</title>
+    </head>
+    <body>
+        <div id='content'>
+            <div id="layerN">
+                Hi!
+            </div>
+            <canvas id='canvas', height=300 width=1250>
+            </canvas>
+        </div>
+        <script type='text/javascript'>
+            let layerN = 0;
+            setTimeout(update, 1000);
+            
+            async function update(){
+                let data = await (await fetch(`/layer/${layerN}`)).json();
+                drawData(data);
+                if (layerN < 100){
+                    document.getElementById('layerN').innerHTML = `Layer ${layerN}`;
+                    layerN++;
+                    setTimeout(update, 100);
+                }
+            }
+
+            function drawData(raw){
+                const canvas =  document.getElementById('canvas');
+                let draw = canvas.getContext('2d');
+                let image = draw.createImageData(25, 6);
+                for (let px = 0; px < raw.length; px++){
+                    if (raw[px] !==0)
+                        colorPx('white', image.data, px*4);
+                    else
+                        colorPx('black', image.data, px*4);
+                }
+
+                draw.putImageData(image, 0, 0);
+                draw.save();
+                draw.scale(50, 50);
+                draw.drawImage(canvas, 0, 0);
+                draw.restore();
+            }
+
+            function colorPx(color, data, pos){
+                data[pos+0] = color == 'black' ? 0 : 255;
+                data[pos+1] = color == 'black' ? 0 : 255;
+                data[pos+2] = color == 'black' ? 0 : 255;
+                data[pos+3] = 255;
+            }
+        </script>
+    </body>
+</html>
