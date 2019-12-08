@@ -5,34 +5,48 @@
     <body>
         <div id='content'>
             <div id="layerN">
-                Hi!
+                Receiving Signal from Santa!
             </div>
-            <canvas id='canvas', height=300 width=1250>
-            </canvas>
+            <div id='original'>
+                Signal:            
+            </div>
+                <canvas id='canvas_o', height=300 width=1250></canvas>
+
+            <div id='final'>
+                Computed:            
+            </div>
+                <canvas id='canvas_f', height=300 width=1250></canvas>
         </div>
         <script type='text/javascript'>
             let layerN = 0;
             setTimeout(update, 1000);
             
             async function update(){
+                document.getElementById('layerN').innerHTML = `Layer ${layerN}`;
                 let data = await (await fetch(`/layer/${layerN}`)).json();
-                drawData(data);
-                if (layerN < 100){
-                    document.getElementById('layerN').innerHTML = `Layer ${layerN}`;
+                drawData('canvas_o', data[0]);
+                drawData('canvas_f', data[1]);
+                if (layerN < 99){
                     layerN++;
                     setTimeout(update, 100);
                 }
             }
 
-            function drawData(raw){
-                const canvas =  document.getElementById('canvas');
+            function drawData(cvID, raw){
+                const canvas =  document.getElementById(cvID);
                 let draw = canvas.getContext('2d');
                 let image = draw.createImageData(25, 6);
                 for (let px = 0; px < raw.length; px++){
-                    if (raw[px] !==0)
-                        colorPx('white', image.data, px*4);
-                    else
-                        colorPx('black', image.data, px*4);
+                    switch(raw[px]){
+                        case 0:
+                            colorPx('black', image.data, px*4);
+                            break;
+                        case 1:
+                            colorPx('white', image.data, px*4);
+                            break;
+                        default:
+                            colorPx('gray', image.data, px*4);
+                    }   
                 }
 
                 draw.putImageData(image, 0, 0);
@@ -43,9 +57,12 @@
             }
 
             function colorPx(color, data, pos){
-                data[pos+0] = color == 'black' ? 0 : 255;
-                data[pos+1] = color == 'black' ? 0 : 255;
-                data[pos+2] = color == 'black' ? 0 : 255;
+                val = {black : [0, 0, 0], 
+                    gray : [99, 135, 99], 
+                    white : [255,255,255]};
+                data[pos+0] = val[color][0]
+                data[pos+1] = val[color][1]
+                data[pos+2] = val[color][2]
                 data[pos+3] = 255;
             }
         </script>

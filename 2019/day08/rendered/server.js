@@ -21,7 +21,7 @@ function getLayers(){
             if (final[i] === 2)
                 final[i] = layer[i];
         }
-        layers[n] = [...final];
+        layers[n] = [[...layer], [...final]];
     }
     return layers;
 }
