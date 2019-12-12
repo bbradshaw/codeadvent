@@ -13,6 +13,17 @@
             ],
             "program": "${fileDirname}\\solve.js",
             "cwd": "${fileDirname}"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Solver (Coffee)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${fileDirname}\\solve.js",
+            "cwd": "${fileDirname}",
+            "preLaunchTask": "compile coffee here"
         }
     ]
 }
