@@ -1,0 +1,326 @@
+<html>
+    <head>
+        <title>Day 11</title>
+    </head>
+    <body>
+        <div id='content'>
+            <canvas id='canvas' height=90 width=550></canvas>
+        </div><br />
+        <button onclick=go()>Go</button>
+        <script type='text/javascript'>
+        const SCALE_FACTOR = 12;
+        let raw = _get_raw();
+
+        function* parseDirections(raw) {
+            for (line of raw.split("\n")) {
+                let m = /(.+) to (.)/.exec(line);
+                let coords = m[1];
+                let char = m[2];
+                let [x, y] = coords.split(',').map(x => Number(x));
+                yield [x, y, char];
+            }
+        }
+
+        function drawPix(draw, x, y, char) {
+            let image = draw.getImageData(0, 0, WIDTH, HEIGHT);
+            y = y*-1 + 1;
+            if (char === ".")
+                colorPx('black', image.data, (y * WIDTH + x) * 4);
+            else if (char === "#")
+                colorPx('white', image.data, (y * WIDTH + x) * 4);
+            else
+                colorPx('red', image.data, (y * WIDTH + x) * 4);
+            draw.putImageData(image, 0, 0);
+        }
+
+        function colorPx(color, data, pos) {
+            val = {
+                black: [0, 0, 0],
+                gray: [99, 135, 99],
+                white: [255, 255, 255],
+                red: [255, 0, 0]
+            };
+            data[pos + 0] = val[color][0]
+            data[pos + 1] = val[color][1]
+            data[pos + 2] = val[color][2]
+            data[pos + 3] = 255;
+        }
+        const big_canvas = document.getElementById('canvas');
+        const canvas = document.createElement('canvas');
+        const HEIGHT = 8;
+        const WIDTH = 43;
+        let draw = canvas.getContext('2d');
+        big_draw = big_canvas.getContext('2d');
+        big_draw.imageSmoothingEnabled = false;
+        big_draw.scale(12, 12);
+
+        function go(){
+            let n = parseDirections(raw);
+            let prev = [0,0,"."];
+            draw.fillRect(0,0, WIDTH, HEIGHT);
+            drawNext();
+            function drawNext(){
+                let {done, value: args} = n.next();
+                drawPix(draw, ...prev);
+                drawPix(draw, args[0], args[1], "$");
+                big_draw.drawImage(canvas, 0, 0);
+                if (!done)
+                    setTimeout(drawNext, 50);
+                prev = args;
+            }
+        }
+        function _get_raw(){
+            return `0, 0 to #
+0, 0 to .
+1, 0 to #
+1, -1 to .
+2, -1 to .
+2, 0 to #
+3, 0 to #
+3, -1 to .
+4, -1 to #
+4, 0 to #
+5, 0 to .
+5, -1 to .
+6, -1 to #
+6, 0 to #
+7, 0 to #
+7, -1 to .
+8, -1 to .
+8, 0 to #
+9, 0 to .
+9, -1 to #
+10, -1 to .
+10, 0 to .
+11, 0 to #
+11, -1 to .
+12, -1 to .
+12, 0 to #
+13, 0 to #
+13, -1 to .
+14, -1 to #
+14, 0 to #
+15, 0 to .
+15, -1 to .
+16, -1 to #
+16, 0 to #
+17, 0 to #
+17, -1 to .
+18, -1 to .
+18, 0 to #
+19, 0 to .
+19, -1 to #
+20, -1 to .
+20, 0 to .
+21, 0 to #
+21, -1 to #
+22, -1 to .
+22, 0 to .
+23, 0 to .
+23, -1 to #
+24, -1 to .
+24, 0 to #
+25, 0 to .
+25, -1 to .
+26, -1 to #
+26, 0 to #
+27, 0 to #
+27, -1 to .
+28, -1 to .
+28, 0 to #
+29, 0 to #
+29, -1 to .
+30, -1 to .
+30, 0 to .
+31, 0 to #
+31, -1 to .
+32, -1 to .
+32, 0 to #
+33, 0 to #
+33, -1 to .
+34, -1 to #
+34, 0 to #
+35, 0 to .
+35, -1 to .
+36, -1 to #
+36, 0 to #
+37, 0 to #
+37, -1 to .
+38, -1 to .
+38, 0 to #
+39, 0 to .
+39, -1 to #
+40, -1 to .
+40, 0 to .
+41, 0 to .
+41, -1 to .
+42, -1 to .
+42, -2 to .
+41, -2 to .
+41, -3 to .
+40, -3 to .
+40, -2 to .
+39, -2 to #
+39, -3 to .
+38, -3 to #
+38, -2 to .
+37, -2 to .
+37, -3 to #
+36, -3 to #
+36, -2 to #
+35, -2 to .
+35, -3 to .
+34, -3 to .
+34, -2 to .
+33, -2 to #
+33, -3 to .
+32, -3 to #
+32, -2 to .
+31, -2 to .
+31, -3 to .
+30, -3 to .
+30, -2 to .
+29, -2 to .
+29, -3 to .
+28, -3 to .
+28, -2 to #
+27, -2 to #
+27, -3 to .
+26, -3 to #
+26, -2 to #
+25, -2 to .
+25, -3 to .
+24, -3 to .
+24, -2 to .
+23, -2 to .
+23, -3 to #
+22, -3 to .
+22, -2 to #
+21, -2 to #
+21, -3 to #
+20, -3 to .
+20, -2 to .
+19, -2 to #
+19, -3 to .
+18, -3 to #
+18, -2 to .
+17, -2 to .
+17, -3 to #
+16, -3 to #
+16, -2 to #
+15, -2 to .
+15, -3 to .
+14, -3 to .
+14, -2 to .
+13, -2 to #
+13, -3 to .
+12, -3 to #
+12, -2 to .
+11, -2 to .
+11, -3 to .
+10, -3 to .
+10, -2 to .
+9, -2 to #
+9, -3 to .
+8, -3 to #
+8, -2 to .
+7, -2 to .
+7, -3 to #
+6, -3 to #
+6, -2 to #
+5, -2 to .
+5, -3 to .
+4, -3 to .
+4, -2 to .
+3, -2 to #
+3, -3 to .
+2, -3 to #
+2, -2 to .
+1, -2 to .
+1, -3 to .
+0, -3 to .
+0, -4 to .
+1, -4 to #
+1, -5 to #
+2, -5 to #
+2, -4 to .
+3, -4 to .
+3, -5 to #
+4, -5 to #
+4, -4 to .
+5, -4 to .
+5, -5 to .
+6, -5 to #
+6, -4 to #
+7, -4 to .
+7, -5 to .
+8, -5 to .
+8, -4 to #
+9, -4 to .
+9, -5 to #
+10, -5 to .
+10, -4 to .
+11, -4 to #
+11, -5 to #
+12, -5 to #
+12, -4 to .
+13, -4 to .
+13, -5 to #
+14, -5 to #
+14, -4 to .
+15, -4 to .
+15, -5 to .
+16, -5 to #
+16, -4 to #
+17, -4 to .
+17, -5 to .
+18, -5 to .
+18, -4 to .
+19, -4 to .
+19, -5 to .
+20, -5 to .
+20, -4 to .
+21, -4 to #
+21, -5 to #
+22, -5 to .
+22, -4 to .
+23, -4 to #
+23, -5 to .
+24, -5 to #
+24, -4 to .
+25, -4 to .
+25, -5 to .
+26, -5 to #
+26, -4 to #
+27, -4 to .
+27, -5 to #
+28, -5 to #
+28, -4 to .
+29, -4 to .
+29, -5 to #
+30, -5 to .
+30, -4 to .
+31, -4 to #
+31, -5 to #
+32, -5 to #
+32, -4 to .
+33, -4 to .
+33, -5 to #
+34, -5 to #
+34, -4 to .
+35, -4 to .
+35, -5 to .
+36, -5 to #
+36, -4 to #
+37, -4 to .
+37, -5 to .
+38, -5 to .
+38, -4 to #
+39, -4 to .
+39, -5 to #
+40, -5 to .
+40, -4 to .`;
+        }
+        </script>
+    </body>
+</html>
