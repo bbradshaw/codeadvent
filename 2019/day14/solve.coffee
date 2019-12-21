@@ -28,7 +28,7 @@ takefromLeftovers = (shortfall, reagent, leftovers) ->
     if leftoverAmts.has(reagent)
         if leftoverAmts.get(reagent) >= shortfall
             leftoverAmts.set(reagent, leftoverAmts.get(reagent) - shortfall)
-            console.log "    -> taking #{shortfall} #{reagent} from extras pile"
+            #console.log "    -> taking #{shortfall} #{reagent} from extras pile"
             took = true
     for [kind, amt] from leftoverAmts.entries()
         if amt > 0
@@ -68,72 +68,50 @@ one = (input) ->
                 queue.push reagent
     sum = results.reduce (acc,v) -> acc + v
 
-leftoverHash = (leftovers) ->
-    crypto = require 'crypto'
-    hash = crypto.createHash 'sha1'
-    asStrings = []
-    for i in [0...leftovers.length-1] by 2
-        asStrings.push "#{leftovers[i]}#{leftovers[i+1]}"
-    asStrings.sort()
-    for s in asStrings
-        hash.update(s)
-    return hash.digest('hex')
+binarysearch = (fn, target, low, high) ->
+    if low is high
+        return low
+    midpoint = Math.floor((high + low) /2)
+    result = fn(midpoint)
+    if result > target
+        console.log "#{midpoint} produces too much #{result}"
+        return binarysearch(fn, target, low, midpoint)
+    else if result < target
+        console.log "#{midpoint} produces too little #{result}"
+        return binarysearch(fn, target, midpoint + 1, high)
+    return midpoint
 
-two = (input) ->
+solve_for_n_fuel = (input, n) ->
     recipes = getRecipes input
-    queue = [1, "FUEL"]
-    fuelProduced = 0
-    oreUsed = 0
-    totalOreUsed = 0
+    queue = [n, "FUEL"]
+    oreNeeded = 0
     leftovers = []
-    seen = new Map
-    while totalOreUsed < 1000000000000
-        if not queue.length
-            queue.push 1
-            queue.push "FUEL"
-            fuelProduced += 1
-            hash = leftoverHash leftovers
-            #console.log "Fuel Produced #{fuelProduced} Ore Used (this time): #{oreUsed} Leftover Hash:#{leftoverHash leftovers}"
-            if seen.has(hash)
-                #console.log "skipping next leftover configuration #{hash}, already solved."
-                fuelProduced += 1
-                totalOreUsed += seen.get hash
-            else
-                seen.set hash, oreUsed
-                totalOreUsed += oreUsed
-            oreUsed = 0
+    while queue.length
         needAmount = queue.shift()
         needProductName = queue.shift()
         if needProductName is "ORE"
-            oreUsed += needAmount
+            oreNeeded += needAmount
             continue
         needProductRecipe = recipes.get(needProductName)
         mult = Math.floor(needAmount / needProductRecipe.amount) or 1
         extra = needProductRecipe.amount*mult - needAmount
-        #console.log "NEED TO PRODUCE #{needAmount} #{needProductName}"
         if not takefromLeftovers(needAmount, needProductName, leftovers)
-            #console.log "  -> using recipe #{needProductRecipe} #{mult} times"
             if (extra > 0)
                 leftovers.push extra
                 leftovers.push needProductName
-                #console.log "    -> producing extra #{extra}"
             else if (extra < 0)
                 queue.push extra*-1
                 queue.push needProductName
-                #console.log "    -> shortfall of #{extra*-1}"
             for [reagent, num] from needProductRecipe.reagentList.entries()
                 queue.push num*mult
                 queue.push reagent
-    fuelProduced
+    oreNeeded
+
+two = (input) ->
+    probSolve = (n) =>
+        solve_for_n_fuel(input, n)
+    return binarysearch(probSolve, 1000000000000, 1600000, 25000000)
 
 
 #console.log one input
-console.log two """157 ORE => 5 NZVS
-165 ORE => 6 DCFZ
-44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
-12 HKGWZ, 1 GPVTF, 8 PSHF => 9 QDVJ
-179 ORE => 7 PSHF
-177 ORE => 5 HKGWZ
-7 DCFZ, 7 PSHF => 2 XJWVT
-165 ORE => 2 GPVTF
-3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"""
+console.log two input
