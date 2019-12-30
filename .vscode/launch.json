@@ -21,7 +21,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${fileDirname}\\solve.js",
+            "program": "${fileDirname}/solve.js",
             "cwd": "${fileDirname}",
             "preLaunchTask": "compile coffee here"
         }
