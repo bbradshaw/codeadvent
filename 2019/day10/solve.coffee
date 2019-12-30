@@ -71,14 +71,68 @@ class AsteroidField
                 if not blockedVis.some((z) => @isSame(o,z))
                     view++
             count.set JSON.stringify(ast), view
-        most = [count.entries()...].reduce((high, k_v) => if (k_v[1] > high[1]) then k_v else high)
+        most = Array.from(count.entries()).reduce((high, k_v) => if (k_v[1] > high[1]) then k_v else high)
         return most
 
-out = (a) ->
-    console.log JSON.stringify a
+class PolarAsteroids
+    constructor: (af, coordinate) ->
+        @xlate = new Map
+        for ast in af.asteroids
+            @relx = ast[0] - coordinate[0] #coordinate[0] - ast[0]
+            @rely = ast[1] - coordinate[1]
+            distance = Math.abs(@relx) + Math.abs(@rely)
+            @xlate.set(JSON.stringify([distance, @relx, @rely]), ast)
+    
+    solve: () ->
+        coordinates = []
+        for coordinate from @xlate.keys()
+            [distance, x, y] = JSON.parse coordinate
+            if x isnt 0 or y isnt 0
+                coordinates.push [distance, x, y]
+        rotation = [new Map, new Map]
+        for [distance, x, y] in coordinates
+            if x >= 0
+                rotation[0].set y/x, []
+            else
+                rotation[1].set y/x, []
+        angles = [Array.from(rotation[0].keys()), Array.from(rotation[1].keys())]
+        angles[0].sort( (a,b) => b-a)
+        angles[1].sort( (a,b) => a-b)
+        for [distance, x, y] in coordinates
+            if x >= 0
+                rotation[0].get(y/x).push([distance,x,y])
+            else
+                rotation[1].get(y/x).push [distance,x,y]
+        for i in [0..1]
+            for ang in angles[i]
+                rotation[i].get(ang).sort((a,b) => a[0] - b[0])
+        console.log "total angles: #{angles[0].length+angles[1].length}"
+        asteroidDestroyed = 0
+        while asteroidDestroyed < 201
+            for i in [0..1]
+                for angle in angles[i]
+                    nxt = rotation[i].get(angle).shift()
+                    if nxt?
+                        asteroidDestroyed++
+                        console.log "asteroid at relative coord [#{JSON.stringify @xlate.get JSON.stringify nxt}] destroyed (#{asteroidDestroyed}) with slope #{angle}"
+                        if asteroidDestroyed == 200
+                            return @xlate.get JSON.stringify nxt
+                console.log "next half"
 
 one = (i) ->
     f = new AsteroidField(i)
-    out(f.solve())
+    return f.solve()
 
-one(input)
+two = (i, x, y) ->
+    f = new AsteroidField(i)
+
+    p = new PolarAsteroids(f, [x,y])
+    ans = p.solve()
+    return ans[0]*100 + ans[1]
+
+
+ans = one(input)
+console.log ans
+start = JSON.parse ans[0]
+two input, start[0], start[1]
+#two input, 11, 13
