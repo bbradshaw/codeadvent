@@ -11,70 +11,63 @@ generatePattern = (pos) ->
             for _ in [0...pos]
                 yield n
 
-applyPhase = (digits) ->
-    rs = []
-    for d,i in digits
-        pattern = generatePattern(i+1)
-        sum = 0
-        dn = 0
-        for n from pattern
-            if dn >= digits.length
-                break
-            sum += n * digits[dn]
-            dn++
-        last = Array.from("#{sum}").pop()
-        rs.push Number last
-    rs
+digitFinder = (input) ->
+    len = input.length
+    answers = {}
+    for i in [1..100]
+        answers[i] = {}
+    getDigitAt = (phase, pos) ->
+        if pos > len
+            throw "Exceeded length of array #{len} with position #{pos}"
+        if pos is len-1
+            return Number input.at(pos)
+        else if phase is 0
+            return Number input.at(pos)
+        else if answers[phase][pos]?
+            return answers[phase][pos]
+        else
+            #console.log "recursing (getDigitAt(#{phase-1}, #{pos}) + getDigitAt(#{phase}, #{pos+1}))"
+            return answers[phase][pos] = (getDigitAt(phase-1, pos) + getDigitAt(phase, pos+1)) % 10
 
-applyPhase2 = (digits) ->
-    len = digits.realLen*10000
-    for i in [1..len]
-        pattern = generatePattern(i)
+applyPhase = (digits, len) ->
+    rs = []
+    for i in [0...len]
+        pattern = generatePattern(i+1)
         sum = 0
         dn = 0
         for n from pattern
             if dn >= len
                 break
-            sum += n * digits.get(dn)
+            sum += n * digits[dn % digits.length]
             dn++
         last = Array.from("#{sum}").pop()
-        yield Number last
+        rs.push Number last
+    rs
 
-class DigitGenerator
-    constructor: (@prevGen, @realLen) ->
-        @digits = []
-
-    get: (n) ->
-        n = n % @realLen
-        thisDG = exports.chain.indexOf(this)
-        while @digits.length <= n
-            nxt = @prevGen.next().value
-            console.log("DG #{thisDG} derived #{nxt} for #{n}")
-            @digits.push nxt
-
-        return @digits[n]
+class repeatArray
+    constructor: (@orig) ->
+        @length = @orig.length * 10000
+    at: (pos) ->
+        return @orig[pos % @orig.length]
 
 one = (input) ->
     digits = Array.from(input)
     for _ in [1..100]
-        digits = applyPhase(digits)
+        digits = applyPhase(digits, digits.length)
         console.log "Phase #{_}: #{digits.join('')} "
     digits[..7].join("")
 
 two = (input) ->
-    digits = Array.from(input)
-    len = digits.length
-    gen = new DigitGenerator(null, len)
-    gen.digits = digits
-    exports.chain = [gen]
-    for _ in [1..100]
-        exports.chain.push new DigitGenerator(applyPhase2(exports.chain[_-1]), len)
-    last = exports.chain.pop()
-    offset = Number(digits[..6].join(""))
-    rs = []
+    original = Array.from(input)
+    digits = new repeatArray(original)
+    solver = digitFinder(digits)
+    offset = Number original[...7].join("")
+    answer = []
+    for i in [digits.length - 2...offset+7]
+        solver(100, i)
     for i in [offset..offset+7]
-        rs.unshift last.get(offset)
-    rs.join("")
-
-#console.log one(input)
-console.log two "03036732577212944063491565474664"
+        answer.push solver(100, i)
+    answer.join("")
+    
+console.log one input 
+console.log two input 
