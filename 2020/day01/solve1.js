@@ -1,4 +1,4 @@
-function solve1(input) {
+async function solve1(input, step) {
     let paired = new Set();
     for (line of input.split("\n")) {
         const thisInt = parseInt(line);
@@ -9,6 +9,13 @@ function solve1(input) {
             break;
         }
         paired.add(2020-thisInt);
-    }
 
+        try {
+            await step();
+        }
+        catch {
+            log("User cancelled");
+            return;
+        }
+    }
 }

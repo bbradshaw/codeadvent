@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, abort
+from flask import Flask, render_template, send_from_directory, send_file, abort
 app = Flask("AOC server", template_folder=".")
 
 @app.route("/day/<int:day>")
@@ -12,6 +12,10 @@ def day(day):
         print(f"error could not find {inp_path}")
         abort(404)
     return render_template("template.html", day=f"{day:02}", input=inp)
+
+@app.route("/script/utils.js")
+def utils():
+    return send_file('utils.js', cache_timeout=1)
 
 @app.route("/script/<int:day>/<name>")
 def script(day, name):
