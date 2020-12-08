@@ -1,3 +1,7 @@
+class UserCancelError extends Error{
+    
+}
+
 class Grid{
     constructor (d2array){
         this.d2array = d2array;
