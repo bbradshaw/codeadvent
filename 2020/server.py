@@ -1,5 +1,5 @@
 from flask import Flask, render_template, send_from_directory, send_file, abort, render_template_string
-import datetime
+import datetime, os
 app = Flask("AOC server", template_folder=".")
 
 @app.route("/")
@@ -18,7 +18,7 @@ def index():
 
 @app.route("/day/<int:day>")
 def day(day):
-    inp_path = f"day{day:02}/input.txt"
+    inp_path = os.path.join(app.root_path, f"day{day:02}/input.txt")
     try:
         f = open(inp_path)
         inp = f.read()
@@ -30,8 +30,8 @@ def day(day):
 
 @app.route("/script/utils.js")
 def utils():
-    return send_file('utils.js', cache_timeout=1)
+    return send_file(os.path.join(app.root_path, 'utils.js'), cache_timeout=1)
 
 @app.route("/script/<int:day>/<name>")
 def script(day, name):
-    return send_from_directory(f"day{day:02}", name, cache_timeout=1)
+    return send_from_directory(os.path.join(app.root_path, f"day{day:02}"), name, cache_timeout=1)
