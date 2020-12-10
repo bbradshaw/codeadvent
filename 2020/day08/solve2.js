@@ -20,10 +20,9 @@ async function run(instructions, step) {
 				ip++;
 				break;
 			case 'end':
-				log(`program end reached! at ${code.addr}`);
+				log(`program end reached! at ${ip}`);
 				return [acc, seen];
 		}
-		await step();
 		if (seen.has(ip)) {
 			log(`Loop detected from '${last_ip}: ${instructions[last_ip].instruction} ${instructions[last_ip].value}'` +
 				` -> '${ip}: ${code.instruction} ${code.value}'`);
@@ -38,12 +37,12 @@ async function solve2(input, step) {
 	let i = 0;
 	for (i=0; i<lines.length; i++) {
 		let [instruction, val] = lines[i].split(" ");
-		instructions.push({ instruction, value: parseInt(val), addr: i });
+		instructions.push({ instruction, value: parseInt(val)});
 	}
 	log(`parsed ${i} instructions.`);
 	let [_, usedPath] = await run(instructions, step);
 	log(`pristine run path of ${usedPath.size} instructions`);
-	instructions.push({ instruction: 'end', value: 0, addr: i + 1 });
+	instructions.push({ instruction: 'end', value: 0});
 
 	for (i=0; i<instructions.length; i++) {
 		const code = instructions[i];
@@ -59,6 +58,7 @@ async function solve2(input, step) {
 			log(`replacing jmp with nop at ${i}`);
 		}
 		const result = await run([...instructions.slice(0, i), new_code, ...instructions.slice(i + 1)], step);
+		await step();
 		if (result[0] !== null) {
 			showAnswer(result[0]);
 			break;
