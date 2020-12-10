@@ -1,5 +1,20 @@
-from flask import Flask, render_template, send_from_directory, send_file, abort
+from flask import Flask, render_template, send_from_directory, send_file, abort, render_template_string
+import datetime
 app = Flask("AOC server", template_folder=".")
+
+@app.route("/")
+def index():
+    html = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AOC 2020</title>
+    </head><body><h1>AOC 2020</h1><ul>
+    {% for i in range(1, day) %}
+    <li><a href='/day/{{i}}'>Day {{i}}</a></li>
+    {% endfor %}</ul>
+    </body></html>"""
+    return render_template_string(html, day=datetime.datetime.now().day)
 
 @app.route("/day/<int:day>")
 def day(day):

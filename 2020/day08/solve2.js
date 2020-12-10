@@ -5,7 +5,6 @@ async function run(instructions, step) {
 	let last_ip = 0;
 	while (true) {
 		code = instructions[ip];
-		gauge(`running '${code.instruction} ${code.value}'`);
 		seen.add(ip);
 		last_ip = ip;
 		switch (code.instruction) {
@@ -47,6 +46,8 @@ async function solve2(input, step) {
 	for (i=0; i<instructions.length; i++) {
 		const code = instructions[i];
 		if (code.instruction === 'acc' || code.instruction === 'end') continue;
+		gauge(`toggling instruction of '${JSON.stringify(code)}'`);
+		await step();
 		if (!usedPath.has(i)) continue;
 		let new_code;
 		if (code.instruction === 'nop') {
@@ -58,7 +59,7 @@ async function solve2(input, step) {
 			log(`replacing jmp with nop at ${i}`);
 		}
 		const result = await run([...instructions.slice(0, i), new_code, ...instructions.slice(i + 1)], step);
-		await step();
+
 		if (result[0] !== null) {
 			showAnswer(result[0]);
 			break;
