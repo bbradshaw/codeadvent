@@ -6,19 +6,20 @@ function union(setA, setB) {
     return _union;
 }
 
-function solve1(input, step){
+async function solve1(input, step){
     let groups = [];
     let persons = [];
     for (const line of input.split("\n")){
         if (line.length === 0){
+            gauge(`parsing ${persons.map(s => Array.from(s))}`);
+            await step();
             groups.push(persons);
             persons = [];
         } else {
             persons.push(new Set(line.split('')));
-			gauge(`parsing ${Array.from(persons)}`);
-			await step();
-		}
-	}
+        }
+
+    }
     groups.push(persons);
     let answer = 0;
     for (const group of groups){
@@ -26,5 +27,5 @@ function solve1(input, step){
         let yeses = group.reduce((acc, p) => union(acc,p));
         answer += yeses.size;
     }
-   showAnswer(answer);
+    showAnswer(answer);
 }

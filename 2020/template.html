@@ -25,6 +25,7 @@
     <script>
         let stopNow = false;
         let stepDelay = 5;
+        let part1Answer = null;
         function showAnswer(answer){
             gauge('');
             document.getElementById('userStop').disabled = true;
@@ -69,8 +70,16 @@
             };
 
                 switch (n) { 
-                    case 1: solve1(getInput(), step).catch(handler); break;
-                    case 2: solve2(getInput(), step).catch(handler); break;
+                    case 1:
+                        part1Answer = null;
+                        solve1(getInput(), step)
+                        .then(() => 
+                            part1Answer = document.getElementById('answer').value)
+                        .catch(handler);
+                        break;
+                    case 2: 
+                        solve2(getInput(), step).catch(handler); 
+                        break;
                 }
         }
         function clearLog(){
@@ -87,6 +96,15 @@
                 b.innerText = "Show Input";
                 i.style.display = 'none';
             }
+        }
+        async function getPart1AnswerForPart2(){
+            if (part1Answer !== null){
+                return part1Answer;
+            }
+            log('solving part 1 first');
+            await solve1(getInput(), step);
+            part1Answer = document.getElementById('answer').value;
+            return part1Answer;
         }
     </script>
     <script src="/script/utils.js"></script>
