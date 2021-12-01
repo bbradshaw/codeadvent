@@ -1,17 +1,16 @@
 function sum(arr) {
-	return arr.reduce((acc, n) => acc+n, 0);
+	return arr.reduce((acc, n) => acc + n, 0);
 }
 
 async function solve2(input, step) {
 	let last = [];
 	let window = [];
 	let count = 0;
-	let lineno = 0;
 
 	for (const line of input.split("\n")) {
 		const thisInt = parseInt(line);
 		window.push(thisInt);
-		if (window.length > 3){
+		if (window.length > 3) {
 			window = window.slice(1, 4);
 		}
 
@@ -28,15 +27,7 @@ async function solve2(input, step) {
 		}
 
 		last = window.slice(0);
-
-		try {
-			showLineCompletion(lineno++);
-			await step();
-		}
-		catch {
-			log("User cancelled");
-			return;
-		}
+		await step(1);
 	}
 	showAnswer(count);
 }

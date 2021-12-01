@@ -1,7 +1,6 @@
 async function solve1(input, step) {
 	let last = null;
 	let count = 0;
-	let lineno = 0;
 
 	for (const line of input.split("\n")) {
 		const thisInt = parseInt(line);
@@ -16,14 +15,7 @@ async function solve1(input, step) {
 		}
 
 		last = thisInt;
-		try {
-			showLineCompletion(lineno++);
-			await step();
-		}
-		catch {
-			log("User cancelled");
-			return;
-		}
+		await step(1);
 	}
 	showAnswer(count);
 }

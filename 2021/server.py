@@ -27,7 +27,11 @@ def day(day):
     except:
         print(f"error could not find {inp_path}")
         abort(404)
-    return render_template("template.html", day=f"{day:02}", input=inp, linetotal=linetotal)
+    return render_template("template.html", 
+        day=f"{day:02}",
+        year=2021,
+        input=inp, 
+        linetotal=linetotal)
 
 @app.route("/script/utils.js")
 def utils():
