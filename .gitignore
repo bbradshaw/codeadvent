@@ -1,4 +1,4 @@
 *.DS_Store
-2020/venv
+*/venv
 .vscode
 __pycache__

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>AOC 2020</title>
+    <title>AOC 2021</title>
     <style>
         #gauge{
             min-height:1em; 
@@ -21,92 +21,15 @@
             animation-duration: 0.5s
         }
 
-    </style>
-    <script>
-        let stopNow = false;
-        let stepDelay = 5;
-        let part1Answer = null;
-        function showAnswer(answer){
-            gauge('');
-            document.getElementById('userStop').disabled = true;
-            document.getElementById('answer').value = answer;
+        .metadata {
+            display:none;
         }
-        function getInput(){
-            return document.getElementById("input").value;
-        }
-        function gauge(g){
-            document.getElementById("gauge").innerHTML = g;
-        }
-        function log(msg){
-            let n = document.createElement("div");
-            n.innerHTML = msg;
-            document.getElementById("log").prepend(n);
-        }
-        function step(){
-            if (!stopNow)
-                return new Promise(resolve => {
-                    setTimeout(resolve, stepDelay);
-                });
-            stopNow = false;
-            return Promise.reject(new UserCancelError("User cancelled."));
-        }
-        function changeDelay(t){
-            stepDelay = parseInt(t.value);
-        }
-        function userStop(){
-            stopNow = true;
-        }
-        function doSolve(n){
-            document.getElementById('userStop').disabled = false;
-            document.getElementById('answer').value = '';
-            const handler = (e) =>{
-                if (e instanceof UserCancelError){
-                    log("User cancelled");
-                }
-                else{
-                    log(e);
-                    throw e;
-                }
-            };
 
-                switch (n) { 
-                    case 1:
-                        part1Answer = null;
-                        solve1(getInput(), step)
-                        .then(() => 
-                            part1Answer = document.getElementById('answer').value)
-                        .catch(handler);
-                        break;
-                    case 2: 
-                        solve2(getInput(), step).catch(handler); 
-                        break;
-                }
+        #progress {
+            display: none;
         }
-        function clearLog(){
-            document.getElementById('log').innerHTML = '';
-        }
-        function toggleInput(){
-            let i = document.getElementById('input');
-            let b = document.getElementById("toggleInput");
-            if (i.style.display === 'none'){
-                b.innerText = "Hide Input";
-                i.style.display = 'inherit';
-            }
-            else{
-                b.innerText = "Show Input";
-                i.style.display = 'none';
-            }
-        }
-        async function getPart1AnswerForPart2(){
-            if (part1Answer !== null){
-                return part1Answer;
-            }
-            log('solving part 1 first');
-            await solve1(getInput(), step);
-            part1Answer = document.getElementById('answer').value;
-            return part1Answer;
-        }
-    </script>
+
+    </style>
     <script src="/script/utils.js"></script>
     <script src="/script/{{ day }}/solve1.js"></script>
     <script src="/script/{{ day }}/solve2.js"></script>
@@ -116,6 +39,8 @@
         <button onclick='doSolve(1)'>Solve part 1</button>
         <button onclick='doSolve(2)'>Solve part 2</button>
         <br />
+        <progress id='progress'></progress>
+        <br />
         Step Delay<input id='stepDelay' value='5' onchange='changeDelay(this)' />
         <button id='userStop' onclick='userStop()' disabled>Stop Processing</button>
         <button onclick='clearLog()'>Clear Log</button>
@@ -124,7 +49,114 @@
     <div id='gauge'></div>
     <canvas id='canvas' style='display:none' height=800 width=600></canvas>
     <div id='log'></div>
+    <div id='meta_linetotal' class='metadata'>{{ linetotal }}</div>
     <button id='toggleInput' onclick='toggleInput()'>Show Input</button>
     <textarea id='input' cols=80 rows=120 style='display:none'>{{ input }}</textarea>
 </body>
+<script>
+    let stopNow = false;
+    let stepDelay = 5;
+    let part1Answer = null;
+    const docGauge = document.getElementById("gauge");
+    const docProgress = document.getElementById("progress");
+
+    function showAnswer(answer){
+        gauge('');
+        docProgress.style.display = 'none';
+        document.getElementById('userStop').disabled = true;
+        document.getElementById('answer').value = answer;
+    }
+    function getInput(){
+        return document.getElementById("input").value;
+    }
+    function gauge(g){
+        docGauge.innerHTML = g;
+    }
+    function log(msg){
+        let n = document.createElement("div");
+        n.innerHTML = msg;
+        document.getElementById("log").prepend(n);
+    }
+    function step(){
+        if (!stopNow)
+            return new Promise(resolve => {
+                setTimeout(resolve, stepDelay);
+            });
+        stopNow = false;
+        return Promise.reject(new UserCancelError("User cancelled."));
+    }
+    function changeDelay(t){
+        stepDelay = parseInt(t.value);
+    }
+    function userStop(){
+        stopNow = true;
+    }
+    function doSolve(n){
+        document.getElementById('userStop').disabled = false;
+        document.getElementById('answer').value = '';
+        const handler = (e) =>{
+            if (e instanceof UserCancelError){
+                log("User cancelled");
+            }
+            else{
+                log(e);
+                throw e;
+            }
+        };
+
+            switch (n) { 
+                case 1:
+                    part1Answer = null;
+                    solve1(getInput(), step)
+                    .then(() => 
+                        part1Answer = document.getElementById('answer').value)
+                    .catch(handler);
+                    break;
+                case 2: 
+                    solve2(getInput(), step).catch(handler); 
+                    break;
+            }
+    }
+    function clearLog(){
+        document.getElementById('log').innerHTML = '';
+    }
+    function toggleInput(){
+        let i = document.getElementById('input');
+        let b = document.getElementById("toggleInput");
+        if (i.style.display === 'none'){
+            b.innerText = "Hide Input";
+            i.style.display = 'inherit';
+        }
+        else{
+            b.innerText = "Show Input";
+            i.style.display = 'none';
+        }
+    }
+
+    function showLineCompletion(lineno){
+        docProgress.style.display = 'inherit';
+        if (lineno != null){
+            const total_lines = parseFloat(document.getElementById('meta_linetotal').innerHTML);
+            const percentage = Number((lineno*100 / total_lines).toFixed(2));
+            docProgress.max = total_lines;
+            docProgress.value = lineno;
+            docProgress.innerHTML = `${percentage}%`;
+        }
+        else{
+            docProgress.max = undefined;
+            docProgress.value = undefined;
+            docProgress.innerHTML = "Processing";
+        }
+    }
+
+    async function getPart1AnswerForPart2(){
+        if (part1Answer !== null){
+            return part1Answer;
+        }
+        log('solving part 1 first');
+        await solve1(getInput(), step);
+        part1Answer = document.getElementById('answer').value;
+        return part1Answer;
+    }
+</script>
 </html>

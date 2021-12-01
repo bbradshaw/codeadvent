@@ -8,8 +8,8 @@ def index():
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>AOC 2020</title>
-    </head><body><h1>AOC 2020</h1><ul>
+    <title>AOC 2021</title>
+    </head><body><h1>AOC 2021</h1><ul>
     {% for i in range(1, day) %}
     <li><a href='/day/{{i}}'>Day {{i}}</a></li>
     {% endfor %}</ul>
@@ -22,11 +22,12 @@ def day(day):
     try:
         f = open(inp_path)
         inp = f.read()
+        linetotal = sum(1 for _ in inp.splitlines())
         f.close()
     except:
         print(f"error could not find {inp_path}")
         abort(404)
-    return render_template("template.html", day=f"{day:02}", input=inp)
+    return render_template("template.html", day=f"{day:02}", input=inp, linetotal=linetotal)
 
 @app.route("/script/utils.js")
 def utils():
