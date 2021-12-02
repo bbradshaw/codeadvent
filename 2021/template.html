@@ -44,10 +44,11 @@
 
         .panel {
             padding: 1em;
-            margin:1.5em 0em;
+            margin: 1.5em 0em;
             border-radius: 18px;
             border: 2px solid #73AD21;
         }
+
         .panel div {
             margin-top: 0.25em;
         }
@@ -64,26 +65,27 @@
         <div id='buttons'>
             <button onclick='doSolve(1)'>Solve part 1</button>
             <button onclick='doSolve(2)'>Solve part 2</button>
-            <div>
-            <progress id='progress'></progress>
-            </div>
-            Step Delay<input id='stepDelay' value='5' onchange='changeDelay(this)' />
+
+            Step Delay<input id='stepDelay' value='0.5' onchange='changeDelay(this)' />
             <button id='userStop' onclick='userStop()' disabled>Stop Processing</button>
             <button onclick='clearLog()'>Clear Log</button>
         </div>
         <div>Answer:<input id='answer' readonly></input></div>
     </div>
+    <div>
+        <progress id='progress'></progress>
+    </div>
     <div id='gauge'></div>
     <canvas id='canvas' style='display:none' height=800 width=600></canvas>
     <div id='log'></div>
     <div id='meta_linetotal' class='metadata'>{{ linetotal }}</div>
-    <button id='toggleInput' onclick='toggleInput()'>Show Input</button>    
+    <button id='toggleInput' onclick='toggleInput()'>Show Input</button>
     <a href='https://adventofcode.com/{{ year }}/day/{{ day | int }}'>link to problem</a>
     <textarea id='input' cols=80 rows=120 style='display:none'>{{ input }}</textarea>
 </body>
 <script>
     let stopNow = false;
-    let stepDelay = 5;
+    let stepDelay = 0.5;
     let part1Answer = null;
     let processingLine = 0;
     const docGauge = document.getElementById("gauge");
@@ -108,8 +110,8 @@
         docLog.prepend(n);
     }
     function step(amount) {
-        if (!stopNow){
-            if (amount != null){
+        if (!stopNow) {
+            if (amount != null) {
                 processingLine += amount;
                 showLineCompletion(processingLine);
             }
@@ -176,13 +178,11 @@
         docProgress.style.display = 'inline';
         if (lineno != null) {
             const total_lines = parseFloat(document.getElementById('meta_linetotal').innerHTML);
-            const percentage = Number((lineno * 100 / total_lines).toFixed(2));
             docProgress.max = total_lines;
             docProgress.value = lineno;
         }
         else {
-            docProgress.max = undefined;
-            docProgress.value = undefined;
+            docProgress.removeAttribute('value');
         }
     }
 

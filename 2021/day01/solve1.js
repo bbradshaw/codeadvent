@@ -7,10 +7,10 @@ async function solve1(input, step) {
 
 		if (last != null) {
 			if (thisInt > last) {
-				gauge(`${thisInt} > ${last}`);
+				log(`${thisInt} > ${last}`);
 				count++;
 			} else {
-				gauge(`%${thisInt} <= ${last}`);
+				log(`${thisInt} <= ${last}`);
 			}
 		}
 

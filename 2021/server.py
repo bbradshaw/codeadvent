@@ -37,6 +37,10 @@ def day(day):
 def utils():
     return send_file(os.path.join(app.root_path, 'utils.js'), cache_timeout=1)
 
+@app.route("/assets/<name>.png")
+def png(name):
+    return send_file(os.path.join(app.root_path, 'assets', f"{name}.png"))
+
 @app.route("/script/<int:day>/<name>")
 def script(day, name):
     return send_from_directory(os.path.join(app.root_path, f"day{day:02}"), name, cache_timeout=1)
