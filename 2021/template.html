@@ -76,11 +76,11 @@
         <progress id='progress'></progress>
     </div>
     <div id='gauge'></div>
-    <canvas id='canvas' style='display:none' height=800 width=600></canvas>
+    <canvas id='canvas' style='display:none' height=800 width=1024></canvas>
     <div id='log'></div>
     <div id='meta_linetotal' class='metadata'>{{ linetotal }}</div>
     <button id='toggleInput' onclick='toggleInput()'>Show Input</button>
-    <a href='https://adventofcode.com/{{ year }}/day/{{ day | int }}'>link to problem</a>
+    
     <textarea id='input' cols=80 rows=120 style='display:none'>{{ input }}</textarea>
 </body>
 <script>

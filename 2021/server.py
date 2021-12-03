@@ -11,10 +11,11 @@ def index():
     <title>AOC 2021</title>
     </head><body><h1>AOC 2021</h1><ul>
     {% for i in range(1, day) %}
-    <li><a href='/day/{{i}}'>Day {{i}}</a></li>
+    <li><a href='/day/{{i}}'>Day {{i}}</a>   --  <a href='https://adventofcode.com/{{ year }}/day/{{ i }}'>link to problem</a></li>
     {% endfor %}</ul>
     </body></html>"""
-    return render_template_string(html, day=datetime.datetime.now().day)
+    now = datetime.datetime.now()
+    return render_template_string(html, day=now.day+1, year=now.year)
 
 @app.route("/day/<int:day>")
 def day(day):

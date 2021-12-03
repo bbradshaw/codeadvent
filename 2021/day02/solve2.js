@@ -2,6 +2,8 @@
 
 async function solve2(input, step) {
 	class Submarine {
+		SCALE_FACTOR = 9;
+
 		constructor() {
 			this.depth = 0;
 			this.pos = 0;
@@ -38,8 +40,9 @@ async function solve2(input, step) {
 			this.animState.cvs_size.x = ctx.canvas.clientWidth;
 			this.animState.cvs_size.y = ctx.canvas.clientHeight;
 
-			this.animState.scaleX = 1.0 / (subImg.width / this.animState.cvs_size.x * 8);
+			this.animState.scaleX = 1.0 / (subImg.width / this.animState.cvs_size.x * this.SCALE_FACTOR);
 			this.animState.scaleY = this.animState.scaleX;
+			this.animState.ctx.font= "12px sans-serif";
 
 		}
 
@@ -53,13 +56,12 @@ async function solve2(input, step) {
 		}
 
 		animate() {
-			log(this.aim);
 			requestAnimationFrame(() => {
 				const a = this.animState;
 				a.ctx.fillStyle = 'lightcyan';
 				a.ctx.fillRect(0, 0, a.cvs_size.x, a.cvs_size.y);
 				const [ scaledX, scaledY ] = [a.scaleX * a.subImg.width, a.scaleY * a.subImg.height]
-				let angle = Math.atan2(this.aim, 1);
+				let angle = Math.atan(this.aim);
 				let [ ctr_x, ctr_y ] = [(this.pos*a.scaleX + scaledX) % a.cvs_size.x, (this.depth*a.scaleY + scaledY) % a.cvs_size.y];
 				a.ctx.translate(ctr_x, ctr_y);
 				a.ctx.rotate(angle);
@@ -68,6 +70,10 @@ async function solve2(input, step) {
 					scaledX,
 					scaledY);
 				a.ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+				a.ctx.fillStyle = 'black';
+				a.ctx.fillText(`Sub Depth: ${this.depth}`, 5, 20);
+				
 			});
 		}
 	}

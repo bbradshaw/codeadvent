@@ -132,3 +132,13 @@ class Navigation {
         return Math.abs(pos2[0] - pos1[0]) + Math.abs(pos2[1] - pos1[1]);
     }
 }
+
+function newCounter(){
+    return new Proxy({}, {
+        get: (obj, prop) => (prop in obj) ? obj[prop] : 0
+    });
+}
+
+function sum(arr){
+    return arr.reduce( (acc, n) => acc+n, 0);
+}
