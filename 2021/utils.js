@@ -2,6 +2,16 @@ class UserCancelError extends Error {
 
 }
 
+function gcd(a, b) {
+    var R;
+    while ((a % b) > 0) {
+        R = a % b;
+        a = b;
+        b = R;
+    }
+    return b;
+}
+
 function modulo(a, n) {
     return ((a % n) + n) % n;
 }
@@ -13,10 +23,13 @@ class Grid {
         this.height = this.d2array.length;
     }
 
-    static from_input(raw) {
+    static from_input(raw, row_split, char_split) {
         let d2array = [];
-        for (const row of raw.split("\n")) {
-            d2array.push(row.split(''));
+        row_split = row_split == null ? "\n" : row_split;
+        char_split = char_split == null ? "" : char_split;
+
+        for (const row of raw.split(row_split)) {
+            d2array.push(row.split(char_split));
         }
         return new Grid(d2array);
     }
@@ -63,19 +76,20 @@ class Grid {
         }
         return new Grid(newArray);
     }
+
+    *[Symbol.iterator]() {
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                yield [x, y, this.at(x, y)]
+            }
+        }
+    }
 }
 
 class Navigation {
     constructor() {
-        this.actors = [];
         this.bounds_x = [0, 0];
         this.bounds_y = [0, 0];
-    }
-
-    new_actor(name) {
-        const id = this.actors.length;
-        this.actors.push({ name, position: Navigation.ORIGIN, id });
-        return id;
     }
 
     static get ORIGIN() {
@@ -87,12 +101,12 @@ class Navigation {
     static get NORTH() { return [0, 1] }
     static get SOUTH() { return [0, -1] }
 
-    move_by_vec(actor_id, vec) {
-        const actor = this.actors[actor_id];
-        actor.position[0] += (vec.direction[0] * vec.magnitude);
-        actor.position[1] += (vec.direction[1] * vec.magnitude);
-        this._expand_bounds(actor.position);
-        return actor.position;
+    move_by_vec(start, vec) {
+        let pos = [...start];
+        pos[0] += (vec.direction[0] * vec.magnitude);
+        pos[1] += (vec.direction[1] * vec.magnitude);
+        this._expand_bounds(pos);
+        return pos;
     }
 
     _expand_bounds(position) {
@@ -102,43 +116,51 @@ class Navigation {
         if (Math.max(position[1]) > this.bounds_y[1]) this.bounds_y[1] = position[1];
     }
 
-    get_position(actor_id) {
-        return this.actors[actor_id].position;
-    }
+    static relative_vec(pos1, pos2) {
+        let dx = pos2[0] - pos1[0];
+        let dy = pos2[1] - pos1[1];
+        const div = gcd(Math.abs(dx), Math.abs(dy));
+        if (div == 0){
+            dx = dx / (Math.abs(dx) || 1);
+            dy = dy / (Math.abs(dy) || 1);
+        }
+        else {
+            dx = dx / div;
+            dy = dy / div;
+        }
 
-    set_position(actor_id, new_position) {
-        this.actors[actor_id].position = new_position;
-    }
-
-    relative_vec(actor1, actor2) {
         return {
-            magnitude: 1, direction:
-                [this.actors[actor1].position[0] - this.actors[actor2].position[0],
-                this.actors[actor1].position[1] - this.actors[actor2].position[1]]
+            magnitude: 1, direction: [dx, dy]
         }
     }
 
-    manhattan(actor_id_or_pos1, actor_id_or_pos2) {
-        let pos1, pos2;
-        if (actor_id_or_pos1 instanceof Array)
-            pos1 = actor_id_or_pos1;
-        else
-            pos1 = this.actors[actor_id_or_pos1].position;
-        if (actor_id_or_pos2 instanceof Array)
-            pos2 = actor_id_or_pos2;
-        else
-            pos2 = this.actors[actor_id_or_pos2].position;
+    static equal_pos(pos1, pos2) {
+        return pos1[0] === pos2[0] && pos1[1] === pos2[1]
+    }
 
+    trace_line(start, end) {
+        let move_vec = this.constructor.relative_vec(start, end);
+        let current = [...start];
+        let line = [[...start]]
+        while (!this.constructor.equal_pos(current, end)){
+            const next = this.move_by_vec(current, move_vec);
+            line.push(next);
+            current = next;
+        }
+        return line;
+    }
+
+    static manhattan(pos1, pos2) {
         return Math.abs(pos2[0] - pos1[0]) + Math.abs(pos2[1] - pos1[1]);
     }
 }
 
-function newCounter(){
+function newCounter() {
     return new Proxy({}, {
         get: (obj, prop) => (prop in obj) ? obj[prop] : 0
     });
 }
 
-function sum(arr){
-    return arr.reduce( (acc, n) => acc+n, 0);
+function sum(arr) {
+    return arr.reduce((acc, n) => acc + n, 0);
 }
