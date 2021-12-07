@@ -52,6 +52,10 @@
         .panel div {
             margin-top: 0.25em;
         }
+        
+        #restoreOriginalInput{
+            display:none;
+        }
     </style>
     <script src="/script/utils.js"></script>
     <script src="/script/{{ day }}/solve1.js"></script>
@@ -80,6 +84,7 @@
     <div id='log'></div>
     <div id='meta_linetotal' class='metadata'>{{ linetotal }}</div>
     <button id='toggleInput' onclick='toggleInput()'>Show Input</button>
+    <button id='restoreOriginalInput' onclick='restoreOriginalInput()'>Restore Problem Input</button>
     
     <textarea id='input' cols=80 rows=120 style='display:none'>{{ input }}</textarea>
 </body>
@@ -93,6 +98,15 @@
     const docProgress = document.getElementById("progress");
     const docLog = document.getElementById("log");
 
+    if (!sessionStorage.getItem('originalInput'))
+        sessionStorage.setItem('originalInput', document.getElementById("input").value);
+    let lastInput = sessionStorage.getItem('lastUsedInput');
+
+    if (lastInput){
+        document.getElementById("input").value = lastInput;
+        document.getElementById("restoreOriginalInput").style.display = 'initial';
+    }
+
     function showAnswer(answer) {
         gauge('');
         docProgress.style.display = 'none';
@@ -100,8 +114,16 @@
         document.getElementById('answer').value = answer;
     }
     function getInput() {
-        return document.getElementById("input").value;
+        const curVal = document.getElementById("input").value;
+        window.sessionStorage.setItem('lastUsedInput', curVal);
+        return curVal;
     }
+
+    function restoreOriginalInput(){
+        window.sessionStorage.removeItem('lastUsedInput');
+        document.getElementById("input").value = window.sessionStorage.getItem("originalInput");
+    }
+
     function gauge(g) {
         docGauge.innerHTML = g;
     }
