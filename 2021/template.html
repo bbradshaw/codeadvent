@@ -12,7 +12,9 @@
 
         #log {
             margin: 1em;
-            font-family: "Courier New", Courier, monospace
+            font-family: "Courier New", Courier, monospace;
+            overflow-y: scroll;
+            max-height:70vh;
         }
 
         @keyframes redFade {
@@ -27,7 +29,7 @@
 
         #log div {
             animation-name: redFade;
-            animation-duration: 0.5s
+            animation-duration: 0.5s;
         }
 
         .metadata {
@@ -55,6 +57,11 @@
         
         #restoreOriginalInput{
             display:none;
+        }
+
+        #input{
+            max-height:40vh;
+            overflow-y: scroll;
         }
     </style>
     <script src="/script/utils.js"></script>
@@ -97,31 +104,28 @@
     const docGauge = document.getElementById("gauge");
     const docProgress = document.getElementById("progress");
     const docLog = document.getElementById("log");
+    
+    const storageKey = "{{year}}:{{day}}:";
+    if (!sessionStorage.getItem(storageKey+'originalInput'))
+        sessionStorage.setItem(storageKey+'originalInput', document.getElementById("input").value);
 
-    if (!sessionStorage.getItem('originalInput'))
-        sessionStorage.setItem('originalInput', document.getElementById("input").value);
-    let lastInput = sessionStorage.getItem('lastUsedInput');
+    let lastInput = sessionStorage.getItem(storageKey+'lastUsedInput');
 
-    if (lastInput){
+    if (lastInput && window.sessionStorage.getItem(storageKey+"originalInput" !== lastInput)){
         document.getElementById("input").value = lastInput;
         document.getElementById("restoreOriginalInput").style.display = 'initial';
     }
 
-    function showAnswer(answer) {
-        gauge('');
-        docProgress.style.display = 'none';
-        document.getElementById('userStop').disabled = true;
-        document.getElementById('answer').value = answer;
-    }
     function getInput() {
         const curVal = document.getElementById("input").value;
-        window.sessionStorage.setItem('lastUsedInput', curVal);
+        window.sessionStorage.setItem(storageKey+'lastUsedInput', curVal);
         return curVal;
     }
 
     function restoreOriginalInput(){
-        window.sessionStorage.removeItem('lastUsedInput');
-        document.getElementById("input").value = window.sessionStorage.getItem("originalInput");
+        window.sessionStorage.removeItem(storageKey+'lastUsedInput');
+        document.getElementById("input").value = window.sessionStorage.getItem(storageKey+"originalInput");
+        document.getElementById("restoreOriginalInput").style.display = 'none';
     }
 
     function gauge(g) {
@@ -132,6 +136,14 @@
         n.innerHTML = msg;
         docLog.prepend(n);
     }
+    
+    function showAnswer(answer) {
+        gauge('');
+        docProgress.style.display = 'none';
+        document.getElementById('userStop').disabled = true;
+        document.getElementById('answer').value = answer;
+    }
+
     function step(amount, newStepsAmt) {
         if (!stopNow) {
             if (amount != null) {
