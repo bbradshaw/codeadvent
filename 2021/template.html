@@ -111,7 +111,7 @@
 
     let lastInput = sessionStorage.getItem(storageKey+'lastUsedInput');
 
-    if (lastInput && window.sessionStorage.getItem(storageKey+"originalInput" !== lastInput)){
+    if (lastInput && window.sessionStorage.getItem(storageKey+"originalInput") !== lastInput){
         document.getElementById("input").value = lastInput;
         document.getElementById("restoreOriginalInput").style.display = 'initial';
     }

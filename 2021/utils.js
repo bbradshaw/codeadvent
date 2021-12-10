@@ -16,6 +16,16 @@ function modulo(a, n) {
     return ((a % n) + n) % n;
 }
 
+function set_diff(s1, s2){
+    s1 = new Set(s1);
+    s2 = new Set(s2);
+    return new Set([...s1].filter(x => !s2.has(x)));
+}
+
+function set_union(s1, s2){
+    return new Set([...s1, ...s2]);
+}
+
 class Grid {
     constructor(d2array) {
         this.d2array = d2array;
