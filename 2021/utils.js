@@ -55,6 +55,12 @@ class Grid {
         return this.d2array[y][x];
     }
 
+    set(x, y, val){
+        const bounds = this.outofbounds(x, y);
+        if (bounds) throw new Error(bounds);
+        this.d2array[y][x] = val;
+    }
+
     neighbors(x, y, diagonal) {
         diagonal = !!diagonal;
 
