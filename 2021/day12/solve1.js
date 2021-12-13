@@ -66,7 +66,5 @@ async function solve1(input, step) {
 			stack.push({node:connectedNode, path: currentPath.slice()});
 		}
 	}
-
 	showAnswer(paths.length);
-
 }
