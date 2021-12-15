@@ -69,19 +69,14 @@ async function solve(input, step, doAllFolds) {
 		log(`After fold #${parseInt(i) + 1}, there are ${pts.length}`);
 		await step(1, folds.length);
 	}
-	pts.sort((a, b) => {
-		const dx = a.x - b.x;
-		if (dx) return dx;
-		else return a.y - b.y;
-	});
 
 	if (doAllFolds){
 		let max_x = Math.max(...pts.map( p => p.x));
 		let max_y = Math.max(...pts.map( p => p.y));
-		let arr = [...Array(max_y+2)].map(x => Array(max_x+2).fill('.'));
+		let arr = [...Array(max_y+2)].map(x => Array(max_x+2).fill('..'));
 		let viz = new Grid(arr);
 		for (let pt of pts) {
-			viz.set(pt.x, pt.y, '#');
+			viz.set(pt.x, pt.y, '██');
 		};
 		log(`<pre>${viz.printable()}</pre>`);
 	}
