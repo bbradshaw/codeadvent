@@ -16,13 +16,13 @@ function modulo(a, n) {
     return ((a % n) + n) % n;
 }
 
-function set_diff(s1, s2){
+function set_diff(s1, s2) {
     s1 = new Set(s1);
     s2 = new Set(s2);
     return new Set([...s1].filter(x => !s2.has(x)));
 }
 
-function set_union(s1, s2){
+function set_union(s1, s2) {
     return new Set([...s1, ...s2]);
 }
 
@@ -55,7 +55,7 @@ class Grid {
         return this.d2array[y][x];
     }
 
-    set(x, y, val){
+    set(x, y, val) {
         const bounds = this.outofbounds(x, y);
         if (bounds) throw new Error(bounds);
         this.d2array[y][x] = val;
@@ -75,6 +75,47 @@ class Grid {
                 neighbors.push([dx + x, dy + y]);
         }
         return neighbors;
+    }
+
+    static async a_star(start, finish, costFn, heuristicFn, neighborFn, callbackFn) {
+        const pos = (coords) => coords.join(",");
+        const getScore = (map, key) => {
+            const s = map.get(key);
+            return s === undefined ? Infinity : s;
+        };
+        let stack = [start];
+        let route = new Map();
+
+        let pathScores = new Map();
+        pathScores.set(pos(start), 0);
+        let heuristicScores = new Map();
+        heuristicScores.set(pos(start), heuristicFn(start, finish));
+
+        while (stack.length) {
+            stack.sort((a, b) => getScore(heuristicScores, pos(b)) - getScore(heuristicScores, pos(a)));
+            let current = stack.pop();
+            if (callbackFn !== undefined) await callbackFn(current);
+            if (pos(current) === pos(finish)) {
+                let winningPath = [];
+                while (current != undefined) {
+                    winningPath.push(current)
+                    current = route.get(pos(current));
+                }
+                return winningPath.reverse();
+            }
+
+            for (let candidate of neighborFn(current)) {
+                let score = getScore(pathScores, pos(current)) + costFn(current, candidate);
+                if (heuristicFn(current, finish) > costFn(current, candidate) + heuristicFn(candidate, finish)) throw new Error("non monotonic heuristic detected!");
+                if (score < getScore(pathScores, pos(candidate))) {
+                    route.set(pos(candidate), current);
+                    pathScores.set(pos(candidate), score);
+                    heuristicScores.set(pos(candidate), score + heuristicFn(candidate, finish));
+                    if (!stack.map(pos).includes(pos(candidate)))
+                        stack.push(candidate);
+                }
+            }
+        }
     }
 
     printable() {
@@ -136,7 +177,7 @@ class Navigation {
         let dx = pos2[0] - pos1[0];
         let dy = pos2[1] - pos1[1];
         const div = gcd(Math.abs(dx), Math.abs(dy));
-        if (div == 0){
+        if (div == 0) {
             dx = dx / (Math.abs(dx) || 1);
             dy = dy / (Math.abs(dy) || 1);
         }
@@ -158,7 +199,7 @@ class Navigation {
         let move_vec = this.constructor.relative_vec(start, end);
         let current = [...start];
         let line = [[...start]]
-        while (!this.constructor.equal_pos(current, end)){
+        while (!this.constructor.equal_pos(current, end)) {
             const next = this.move_by_vec(current, move_vec);
             line.push(next);
             current = next;
