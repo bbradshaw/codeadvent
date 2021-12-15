@@ -173,9 +173,13 @@
         const handler = (e) => {
             if (e instanceof UserCancelError) {
                 log("User cancelled");
+                document.getElementById('userStop').disabled = true;
+                docProgress.style.display = 'none';
             }
             else {
                 log(e);
+                document.getElementById('userStop').disabled = true;
+                docProgress.style.display = 'none';
                 throw e;
             }
         };
