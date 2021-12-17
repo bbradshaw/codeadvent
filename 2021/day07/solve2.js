@@ -1,7 +1,3 @@
-function triangular_n(n){
-	return (n*n + n) / 2
-}
-
 function score(crabPos, from){
 	return sum(crabPos.map(p => triangular_n(Math.abs(p-from))));
 }

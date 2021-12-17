@@ -184,10 +184,10 @@ class Navigation {
     }
 
     _expand_bounds(position) {
-        if (Math.max(position[0]) < this.bounds_x[0]) this.bounds_x[0] = position[0];
-        if (Math.max(position[0]) > this.bounds_x[1]) this.bounds_x[1] = position[0];
-        if (Math.max(position[1]) < this.bounds_y[0]) this.bounds_y[0] = position[1];
-        if (Math.max(position[1]) > this.bounds_y[1]) this.bounds_y[1] = position[1];
+        if (position[0] < this.bounds_x[0]) this.bounds_x[0] = position[0];
+        if (position[0] > this.bounds_x[1]) this.bounds_x[1] = position[0];
+        if (position[1] < this.bounds_y[0]) this.bounds_y[0] = position[1];
+        if (position[1] > this.bounds_y[1]) this.bounds_y[1] = position[1];
     }
 
     static relative_vec(pos1, pos2) {
@@ -237,4 +237,8 @@ function newCounter() {
 
 function sum(arr) {
     return arr.reduce((acc, n) => acc + n, 0);
+}
+
+function triangular_n(n){
+	return (n*n + n) / 2
 }
