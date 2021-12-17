@@ -11,18 +11,6 @@ async function solve2(input, step) {
 
 	let cave = new Grid(bigArray);
 
-	const start = [0, 0];
-	const finish = [cave.width - 1, cave.height - 1];
-	let step_i = 0;
-
-
-	const path = await Grid.a_star(start, finish,
-		(_from, [x, y]) => cave.at(x, y),
-		(a, b) => Navigation.manhattan(a, b),
-		([x, y]) => cave.neighbors(x, y, false));
-
-	path.shift();
-	log(JSON.stringify(path));
-	showAnswer(sum(path.map(([x, y]) => cave.at(x, y))));
+	await solve(cave, step);
 
 }

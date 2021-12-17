@@ -26,11 +26,28 @@ function set_union(s1, s2) {
     return new Set([...s1, ...s2]);
 }
 
+function memod_coord2d_fn (fn){
+    let pos_cache = {};
+
+    return (coords) => {
+        let rs;
+        if (pos_cache[coords[0]] && (rs = pos_cache[coords[0]][coords[1]]))
+            return rs;
+        else{
+            rs = fn(coords);
+            !pos_cache[coords[0]] ? pos_cache[coords[0]] = {}: void 0;
+            pos_cache[coords[0]][coords[1]] = rs;
+            return rs;
+        }
+    };
+}
+
 class Grid {
-    constructor(d2array) {
+    constructor(d2array) { 
         this.d2array = d2array;
         this.width = this.d2array[0].length;
         this.height = this.d2array.length;
+        this.outofbounds = memod_coord2d_fn(this._outofbounds);
     }
 
     static from_input(raw, row_split, char_split) {
@@ -44,7 +61,7 @@ class Grid {
         return new Grid(d2array);
     }
 
-    outofbounds(x, y) {
+    _outofbounds(x, y) {
         if (x >= this.width || x < 0) return `x = ${x} out of bounds 0 - ${this.width}`;
         if (y >= this.height || y < 0) return `y = ${y} out of bounds 0 - ${this.height}`
     }
@@ -78,7 +95,7 @@ class Grid {
     }
 
     static async a_star(start, finish, costFn, heuristicFn, neighborFn, callbackFn) {
-        const pos = (coords) => coords.join(",");
+        const pos = memod_coord2d_fn( (coords) => `${coords[0]},${coords[1]}`);
         const getScore = (map, key) => {
             const s = map.get(key);
             return s === undefined ? Infinity : s;
