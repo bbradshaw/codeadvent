@@ -134,7 +134,7 @@
     function log(msg) {
         let n = document.createElement("div");
         n.innerHTML = msg;
-        docLog.prepend(n);
+        docLog.append(n);
     }
     
     function showAnswer(answer) {
@@ -146,6 +146,7 @@
 
     function step(amount, newStepsAmt) {
         if (!stopNow) {
+            docLog.scrollTop = docLog.scrollHeight;
             if (amount != null) {
                 processingLine += amount;
                 showLineCompletion(processingLine, newStepsAmt);
