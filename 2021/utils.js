@@ -26,16 +26,16 @@ function set_union(s1, s2) {
     return new Set([...s1, ...s2]);
 }
 
-function memod_coord2d_fn (fn){
+function memod_coord2d_fn(fn) {
     let pos_cache = {};
 
     return (coords) => {
         let rs;
         if (pos_cache[coords[0]] && (rs = pos_cache[coords[0]][coords[1]]))
             return rs;
-        else{
+        else {
             rs = fn(coords);
-            !pos_cache[coords[0]] ? pos_cache[coords[0]] = {}: void 0;
+            !pos_cache[coords[0]] ? pos_cache[coords[0]] = {} : void 0;
             pos_cache[coords[0]][coords[1]] = rs;
             return rs;
         }
@@ -43,7 +43,7 @@ function memod_coord2d_fn (fn){
 }
 
 class Grid {
-    constructor(d2array) { 
+    constructor(d2array) {
         this.d2array = d2array;
         this.width = this.d2array[0].length;
         this.height = this.d2array.length;
@@ -95,7 +95,7 @@ class Grid {
     }
 
     static async a_star(start, finish, costFn, heuristicFn, neighborFn, callbackFn) {
-        const pos = memod_coord2d_fn( (coords) => `${coords[0]},${coords[1]}`);
+        const pos = memod_coord2d_fn((coords) => `${coords[0]},${coords[1]}`);
         const getScore = (map, key) => {
             const s = map.get(key);
             return s === undefined ? Infinity : s;
@@ -239,6 +239,17 @@ function sum(arr) {
     return arr.reduce((acc, n) => acc + n, 0);
 }
 
-function triangular_n(n){
-	return (n*n + n) / 2
+function triangular_n(n) {
+    return (n * n + n) / 2
+}
+
+function* permute2(arr) {
+    for (let i = 0; i < arr.length - 1; i++)
+        for (let j = i + 1; j < arr.length; j++)
+            yield [arr[i], arr[j]]
+}
+
+function assert(bool, msg){
+    if (!bool)
+        throw new Error(`Assertion failed: '${msg}'`)
 }
