@@ -29,12 +29,12 @@ function set_union(s1, s2) {
 function memod_coord2d_fn(fn) {
     let pos_cache = {};
 
-    return (coords) => {
+    return function (coords) {
         let rs;
         if (pos_cache[coords[0]] && (rs = pos_cache[coords[0]][coords[1]]))
             return rs;
         else {
-            rs = fn(coords);
+            rs = fn.bind(this)(coords);
             !pos_cache[coords[0]] ? pos_cache[coords[0]] = {} : void 0;
             pos_cache[coords[0]][coords[1]] = rs;
             return rs;
@@ -47,7 +47,7 @@ class Grid {
         this.d2array = d2array;
         this.width = this.d2array[0].length;
         this.height = this.d2array.length;
-        this.outofbounds = memod_coord2d_fn(this._outofbounds);
+        this.outofbounds = memod_coord2d_fn(this._outofbounds).bind(this);
     }
 
     static from_input(raw, row_split, char_split) {
@@ -249,7 +249,7 @@ function* permute2(arr) {
             yield [arr[i], arr[j]]
 }
 
-function assert(bool, msg){
+function assert(bool, msg) {
     if (!bool)
         throw new Error(`Assertion failed: '${msg}'`)
 }
