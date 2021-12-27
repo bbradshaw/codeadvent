@@ -1,180 +1,200 @@
-function create_state(input) {
-	const lines = input.split("\n");
-	let state = Array(19).fill('.');
-	state[3] = lines[2][3];
-	state[4] = lines[3][3];
-	state[7] = lines[2][5];
-	state[8] = lines[3][5];
-	state[11] = lines[2][7];
-	state[12] = lines[3][7];
-	state[15] = lines[2][9];
-	state[16] = lines[3][9];
-	return state;
-}
-/*
-#############
-#012569adehi#
-###3#7#b#f###
-  #4#8#c#g#
-  #########
+class ScudState {
+	ROOM_CONNECTIONS = [2, 4, 6, 8];
 
-WINNINGSTATE = ...AA..BB..CC..DD..
-  */
-
-const ABOVE_ROOM = [2, 6, 10, 14];
-const TOP_ROOM = [3, 7, 11, 15];
-const BOT_ROOM = [4, 8, 12, 16];
-
-const LEFT_HALL = [0, 1];
-const MID_HALL = [5, 9, 13];
-const RIGHT_HALL = [17, 18];
-
-const DEST_ROOM = {
-	A: [3, 4],
-	B: [7, 8],
-	C: [11, 12],
-	D: [15, 16]
-}
-
-
-const HALL_PATH = [...LEFT_HALL, ...MID_HALL, ...ABOVE_ROOM, ...RIGHT_HALL].sort((a, b) => a - b);
-
-const print_state = (state) => {
-	let buffer = [];
-	for (let p of HALL_PATH) buffer.push(state[p]);
-	buffer.push(`\n  ${state[3]} ${state[7]} ${state[11]} ${state[15]}`);
-	buffer.push(`\n  ${state[4]} ${state[8]} ${state[12]} ${state[16]}`);
-	return buffer.join("");
-}
-
-const is_occupied = c => c !== ".";
-
-function get_movable(state) {
-	let movable = [];
-	for (let p of BOT_ROOM) {
-		if (is_occupied(state[p - 1]))
-			movable.push({ shr: state[p - 1], cur: p - 1, isin: 'room' });
-		else {
-			if (is_occupied(state[p]) && !DEST_ROOM[state[p]].includes(p))
-				movable.push({ shr: state[p], cur: p, isin: 'room' });
-		}
+	constructor(rooms, hall) {
+		this.room = rooms;
+		this.hall = Array.from(hall);
 	}
 
-	for (let p of [...LEFT_HALL, ...MID_HALL, ...RIGHT_HALL]) {
-		movable.push({ shr: state[p], cur: p, isin: 'hall' });
-	}
+	apply_move(move) {
+		let next = new ScudState(this.room.map(r => r.slice()), this.hall.slice());
+		const [fRoom, fOffset] = move.from;
+		const [tRoom, tOffset] = move.to;
 
-	return movable.filter(inf => is_occupied(inf.shr));
-}
-
-function* trace_path(from, to) {
-	let cur = from;
-	let additional_steps = [];
-	let hall_target = to;
-
-	if (BOT_ROOM.includes(from)) {
-		yield TOP_ROOM[BOT_ROOM.indexOf(from)];
-		yield ABOVE_ROOM[BOT_ROOM.indexOf(from)];
-		cur = ABOVE_ROOM[BOT_ROOM.indexOf(from)];
-	}
-	else if (TOP_ROOM.includes(from)) {
-		yield ABOVE_ROOM[TOP_ROOM.indexOf(from)];
-		cur = ABOVE_ROOM[TOP_ROOM.indexOf(from)];
-	}
-
-	if (BOT_ROOM.includes(to)) {
-		additional_steps = [TOP_ROOM[BOT_ROOM.indexOf(to)], to]
-		hall_target = ABOVE_ROOM[BOT_ROOM.indexOf(to)];
-	}
-	else if (TOP_ROOM.includes(to)) {
-		additional_steps = [to];
-		hall_target = ABOVE_ROOM[TOP_ROOM.indexOf(to)];
-	}
-	let curIdx = HALL_PATH.indexOf(cur);
-	while (cur != hall_target) {
-		if (hall_target < cur)
-			curIdx--;
+		if (fRoom === 'H')
+			next.hall[fOffset] = ".";
 		else
-			curIdx++
-		cur = HALL_PATH[curIdx];
-		yield cur;
+			next.room[fRoom][fOffset] = ".";
+
+		if (tRoom === 'H')
+			next.hall[tOffset] = move.scud;
+		else
+			next.room[tRoom][tOffset] = move.scud;
+		return next;
 	}
-	for (const step of additional_steps)
-		yield step;
 
-}
-
-function is_blocked(state, from, to) {
-	for (const pos of trace_path(from, to)) {
-		if (is_occupied(state[pos]))
-			return true;
+	toString() {
+		let buffer = [];
+		for (let p in this.hall) buffer.push(this.hall[p]);
+		for (let c in this.room[0])
+			buffer.push(`\n  ${this.room[0][c]} ${this.room[1][c]} ${this.room[2][c]} ${this.room[3][c]}`);
+		return buffer.join("");
 	}
-	return false;
-}
 
-function calc_cost(shr, from, to) {
-	let steps = 0;
-	for (const _pos of trace_path(from, to))
-		steps++;
-	return { A: 1, B: 10, C: 100, D: 1000 }[shr] * steps;
-}
+	is_occupied([room, offset]) {
+		if (room === "H")
+			return this.hall[offset] !== ".";
+		else
+			return this.room[room][offset] !== ".";
+	}
 
-function get_options(state, moveable) {
-	let dests = [];
-	for (let p of BOT_ROOM) {
-		if (!DEST_ROOM[moveable.shr].includes(p)) // can only move to room if right type
-			continue;
-		if (!is_occupied(state[p]))				  // can only move if room free
-			dests.push({ dest: 'room', to: p });
-		else if (!is_occupied(state[p - 1])) {	// otherwise look at top slot
-			if ((DEST_ROOM[state[p]]).includes(p)) // and bot occupant matches
-				dests.push({ dest: 'room', to: p - 1 });
+	get_mobile() {
+		let mobile = [];
+		for (let roomN = 0; roomN < this.room.length; roomN++) {
+			let scud;
+			for (let offset = 0; offset < this.room[roomN].length; offset++) {
+				if (this.is_occupied([roomN, offset])) {
+					scud = { scud: this.room[roomN][offset], from: [roomN, offset] };
+					break;
+				}
+			}
+			if (scud) {
+				if (this.room_match(roomN, scud)) {
+					for (let i = scud.from[1]; i < this.room[roomN].length; i++)
+						if (!this.room_match(roomN, this.room[roomN][i])) {
+							mobile.push(scud);
+							break;
+						}
+				}
+				else
+					mobile.push(scud);
+			}
 		}
+
+		for (let h = 0; h < this.hall.length; h++) {
+			if (this.is_occupied(["H", h]))
+				mobile.push({ scud: this.hall[h], from: ["H", h] });
+		}
+
+		return mobile;
 	}
 
-	if (moveable.isin !== 'hall') {
-		for (let hallpos of [...LEFT_HALL, ...MID_HALL, ...RIGHT_HALL])
-			dests.push({ dest: 'hall', to: hallpos });
+	trace_path(from, to) {
+		let path = [];
+		const path_push = (a) => {
+			path.push(a);
+			if (path.length > 15) debugger;
+		}
+		const [fRoom, fOffset] = from;
+		const [tRoom, tOffset] = to;
+		let cur = fOffset;
+		let dest = tOffset;
+
+		if (fRoom === tRoom)
+			throw new Error(`illegal move from ${fRoom} to ${tRoom}`);
+
+		if (fRoom !== "H") {
+			for (let i = fOffset - 1; i >= 0; i--) {
+				path_push([fRoom, i]);
+			}
+			cur = this.ROOM_CONNECTIONS[fRoom];
+			path_push(["H", cur]);
+		}
+
+		if (tRoom === "H" && this.ROOM_CONNECTIONS.includes(tOffset))
+			throw new Error(`illegal move to hall ${tOffset}`);
+
+		if (tRoom !== "H") {
+			dest = this.ROOM_CONNECTIONS[tRoom];
+		}
+		let dir = cur > dest ? -1 : 1;
+		while (cur != dest) {
+			cur += dir;
+			path_push(["H", cur]);
+		}
+		if (tRoom !== "H") {
+			for (let i = 0; i <= tOffset; i++)
+				path_push([tRoom, i]);
+		}
+		return path;
 	}
 
-	dests = dests.filter(d => !is_blocked(state, moveable.cur, d.to));
-	return dests.map(d => Object.assign(d,
-		{ cost: calc_cost(moveable.shr, moveable.cur, d.to) },
-		moveable));
+	room_match(room, scud) {
+		let r = { A: 0, B: 1, C: 2, D: 3 }[scud];
+		return room === r;
+	}
+	can_move_to_room(room, scud) {
+
+		if (!this.room_match(room, scud))
+			return false;
+
+		return this.room[room].every(spot => spot == scud || spot == ".");
+	}
+
+	get_destinations(mobile) {
+		let dests = [];
+
+		for (let r = 0; r < this.room.length; r++) {
+			if (mobile.from[0] === r) continue;
+			let target;
+			for (let i = this.room[r].length; i >= 0; i--) {
+				if (!this.is_occupied([r, i]) && this.can_move_to_room(r, mobile.scud)) {
+					target = [r, i];
+					break;
+				}
+			}
+			if (target)
+				dests.push(target);
+		}
+
+		if (mobile.from[0] !== 'H') {
+			for (let h = 0; h < this.hall.length; h++)
+				if (!this.ROOM_CONNECTIONS.includes(h))
+					dests.push(['H', h]);
+		}
+
+		dests = dests.filter(d => !this.is_blocked(mobile.from, d));
+		return dests.map(d => ({ ...mobile, to: d, cost: this.calc_cost(mobile.scud, mobile.from, d) }));
+	}
+
+	is_blocked(from, to) {
+		for (let space of this.trace_path(from, to)) {
+			if (this.is_occupied(space))
+				return true;
+		}
+		return false;
+	}
+
+	get score() {
+		let score = 0;
+		let matching = { 0: 'A', 1: 'B', 2: 'C', 3: 'D' };
+		for (let r = 0; r < this.room.length; r++) {
+			this.room[r].filter(spot => spot === matching[r]).forEach(() => score++);
+		}
+		return score;
+	}
+
+	next_options() {
+		let options = [];
+		for (const mobile of this.get_mobile())
+			for (let move of this.get_destinations(mobile)) {
+				options.push(move);
+			}
+		return options.map(move => ({ move, nextstate: this.apply_move(move) }));
+	}
+
+	calc_cost(scud, from, to) {
+		let steps = 0;
+
+		for (let _p of this.trace_path(from, to))
+			steps++;
+
+		return { A: 1, B: 10, C: 100, D: 1000 }[scud] * steps;
+	}
 }
 
-function apply_state(prev, chosen_move) {
-	let state = prev.slice();
-	state[chosen_move.cur] = ".";
-	state[chosen_move.to] = chosen_move.shr;
+function parseScudState1(input) {
+	const lines = input.split("\n");
+	let hall = /#([^#]+)#/.exec(lines[1])[1];
+	let top_room = /[ #]+([ABCD.])#([ABCD.])#([ABCD.])#([ABCD.])[ #]+/.exec(lines[2]).slice(1, 5);
+	let bot_room = /[ #]+([ABCD.])#([ABCD.])#([ABCD.])#([ABCD.])[ #]+/.exec(lines[3]).slice(1, 5);
+	let rooms = top_room.map((k, i) => [k, bot_room[i]]);
+	let state = new ScudState(rooms, hall);
 	return state;
-}
-
-function next_moves(state) {
-	let movables = get_movable(state);
-	let nextmoves = [];
-	for (const movable of movables) {
-		for (let move of get_options(state, movable)) {
-			Object.assign(move, { score: score_state(apply_state(state, move)) });
-			nextmoves.push(move);
-		}
-	}
-	return nextmoves;
-}
-
-const score_state = (state) => {
-	let score = 0;
-	for (const [shr, dests] of Object.entries(DEST_ROOM)) {
-		if (state[dests[0]] === shr)
-			score++;
-		if (state[dests[1]] === shr)
-			score++
-	}
-	return score;
 }
 
 async function solve1(input, step) {
-	let current = { state: create_state(input), energy: 0, history: [] };
+	let current = { state: parseScudState1(input), energy: 0, history: [] };
 
 	let winner = Infinity;
 	let winning_path = null;
@@ -185,55 +205,64 @@ async function solve1(input, step) {
 	let turns = 0;
 	while (stack.length) {
 		current = stack.pop();
-		let candidates = next_moves(current.state).sort((m1, m2) => m1.score - m2.score);
+		let candidates = current.state.next_options().sort((m1, m2) => m1.nextstate.score - m2.nextstate.score);
 		gauge(`${candidates.length} moves from current considered state, ${stack.length} moves to evaluate`);
 		for (const candidate of candidates) {
-			let energy = current.energy + candidate.cost;
-			let newState = apply_state(current.state, candidate);
+			let energy = current.energy + candidate.move.cost;
 
 			if (energy > winner)
 				continue;
-			if (candidate.score > bestscore) {
-				log(`new best score ${candidate.score}`);
-				bestscore = candidate.score;
+			if (candidate.nextstate.score > bestscore) {
+				log(`new best score ${candidate.nextstate.score}`);
+				bestscore = candidate.nextstate.score;
 			}
-			if (candidate.score === 8) {
+			if (candidate.nextstate.score === 8) {
 				log(`found a solution with cost ${energy}!`);
 				winner = Math.min(energy, winner);
-				winning_path = [newState.join(""), current.state.join(""), ...current.history].map(p => print_state(p));
+				winning_path = [candidate.nextstate.toString(), ...current.history];
 				continue;
 			}
-			if (seen_state.get(newState.join("")) <= energy)
+			if (seen_state.get(candidate.nextstate.toString()) <= energy)
 				continue;
-			seen_state.set(newState.join(""), energy);
-			stack.push({ state: apply_state(current.state, candidate), energy, history: [current.state.join(""), ...current.history] });
+			seen_state.set(candidate.nextstate.toString(), energy);
+			stack.push({ state: candidate.nextstate, energy, history: [candidate.nextstate.toString(), ...current.history] });
 		}
-		if (turns++ % 1000 === 0) await step(null)
+		if (turns++ % 5000 === 0) await step(null);
+
 	}
 	log(`winning path is <pre>${winning_path.join("\n\n")}</pre>`);
 	showAnswer(winner);
 }
 
 function test() {
-	let state = create_state(`#############
+	let state = parseScudState1(`#############
 #...B.......#
 ###B#C#.#D###
   #A#D#C#A#
   #########`);
-	state[5] = 'B';
 
-	assert(!is_blocked(state, 3, 0));
-	assert(is_blocked(state, 3, 18));
+	assert(!state.is_blocked([0, 0], ["H", 0]))
+	assert(state.is_blocked([0, 0], ["H", 10]))
 
-	let next_move = get_movable(state).find(m => m.shr === 'C' && m.cur == 7)
+	let next_move = state.get_mobile().find(m => m.scud == 'C' && m.from[0] == 1 && m.from[1] == 0);
 	assert(next_move);
-	get_options(state, next_move).some(m => m.to === 11);
-	assert(calc_cost('C', 7, 11) === 400);
+	assert(state.get_destinations(next_move).some(m => m.to[0] == "H" && m.to[1] == 10));
+	assert(state.get_mobile().length === 5)
 
-	state[9] = 'C';
-	assert(is_blocked(state, 11, 7));
-
+	assert(state.calc_cost("C", [1, 0], ["H", 7]) === 400);
 	console.log('unit tests pass');
+
+	state = parseScudState1(`#############
+	#...A.......#
+	###.#B#C#D###
+	  #A#B#C#D#
+	  #########`);
+
+	next_move = state.get_mobile().find(m => m.scud === 'A' && m.from[0] === 'H');
+	assert(next_move);
+	assert(state.get_destinations(next_move).some(m => m.to[0] === 0 && m.to[1] === 0));
+	assert(state.score === 7);
+
 }
 
 test()
