@@ -13,7 +13,7 @@ const transform = (raw) => {
 
 const region = (ins) => {
 	for (const dim of ['x', 'y', 'z'])
-		for (const m of ['_min', '_max']){
+		for (const m of ['1', '2']){
 			if (ins[dim+m] > 50)
 				return false;
 			if (ins[dim+m] < -50)
