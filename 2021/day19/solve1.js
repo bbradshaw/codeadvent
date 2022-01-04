@@ -109,7 +109,6 @@ async function solve1(input, step) {
 	}
 
 	let matched = { 0: scanners[0] };
-	//unknown_scanners.delete(0);
 
 	lastSize = unknown_scanners.size;
 	while (unknown_scanners.size > 0) {
@@ -142,10 +141,4 @@ async function solve1(input, step) {
 	let all_points = new Set(Object.values(matched).flat().map(v => v.toString()))
 	showAnswer(all_points.size);
 
-}
-
-function test(){
-	let output = [];
-	
-	log("unit tests complete;")
 }
