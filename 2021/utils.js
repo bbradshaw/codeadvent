@@ -26,6 +26,13 @@ function set_union(s1, s2) {
     return new Set([...s1, ...s2]);
 }
 
+function set_intersect(s1, s2) {
+    s1 = new Set(s1);
+    s2 = new Set(s2);
+
+    return new Set([...s1].filter(x => s2.has(x)));
+}
+
 function memod_coord2d_fn(fn) {
     let pos_cache = {};
 
@@ -252,4 +259,24 @@ function* permute2(arr) {
 function assert(bool, msg) {
     if (!bool)
         throw new Error(`Assertion failed: '${msg}'`)
+}
+
+function lineMatch(txt1, txt2){
+    let cnt1 = newCounter();
+    let cnt2 = newCounter();
+
+    txt1.split("\n").forEach( l => cnt1[l]++);
+    txt2.split("\n").forEach( l => cnt2[l]++);
+    
+    keys = set_union(Object.keys(cnt1), Object.keys(cnt2));
+
+    buffer = []
+    for (key of keys.values()){
+        if (cnt1[key] !== cnt2[key]){
+            buffer.push(`'${key}': A:${cnt1[key]} times, B: ${cnt2[key]} times`);
+        }
+    }
+    if (buffer.length > 0)
+        throw new Error("differences"+buffer.join("\n"));
+
 }

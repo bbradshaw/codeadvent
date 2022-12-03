@@ -15,7 +15,7 @@ def index():
     {% endfor %}</ul>
     </body></html>"""
     now = datetime.datetime.now()
-    return render_template_string(html, day=now.day+1, year=now.year)
+    return render_template_string(html, day=max(now.day+1, 25), year=now.year)
 
 @app.route("/day/<int:day>")
 def day(day):

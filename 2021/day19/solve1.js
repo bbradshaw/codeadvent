@@ -89,7 +89,7 @@ function common_points(s1, s2, scan1, scan2) {
 	return [null, null];
 }
 
-async function solve1(input, step) {
+async function solve(part, input, step) {
 
 	let scanners = [];
 	let scanner_i = 0;
@@ -138,7 +138,19 @@ async function solve1(input, step) {
 		}
 		lastSize = unknown_scanners.size;
 	}
-	let all_points = new Set(Object.values(matched).flat().map(v => v.toString()))
-	showAnswer(all_points.size);
+	if (part === 1){
+		let all_points = new Set(Object.values(matched).flat().map(v => v.toString()))
+		showAnswer(all_points.size);
+	}
+	else if (part === 2){
+		let max = 0;
+		for (const [d1, d2] of permute2(distances)){
+			max = Math.max(max, manhattan3d(d1, d2));
+		}
+		showAnswer(max);
+	}
+}
 
+async function solve1(input, step){
+	await solve(1, input, step);
 }
