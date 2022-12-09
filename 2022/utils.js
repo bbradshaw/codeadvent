@@ -72,6 +72,14 @@ class Grid {
         if (x >= this.width || x < 0) return `x = ${x} out of bounds 0 - ${this.width}`;
         if (y >= this.height || y < 0) return `y = ${y} out of bounds 0 - ${this.height}`
     }
+    
+    *raycast (x, y, next) {
+        [x, y] = next(x, y);
+        while (!this._outofbounds(x,y)){
+            yield [x, y, this.at(x, y)];
+            [x, y] = next(x, y);
+        }
+    }
 
     at(x, y) {
         const bounds = this.outofbounds(x, y);
