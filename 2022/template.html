@@ -8,11 +8,12 @@
             min-height: 1em;
             min-width: 1em;
             background-color: lightblue;
+            font-family:'Courier New', Courier, monospace;
         }
 
         #log {
             margin: 1em;
-            font-family: "Courier New", Courier, monospace;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-y: scroll;
             max-height:70vh;
         }
@@ -101,6 +102,7 @@
     let part1Answer = null;
     let processingLine = 0;
     let totalSteps = parseFloat(document.getElementById('meta_linetotal').innerHTML) || 0;  // default to lines in input
+    let delaySkip = 0;
     const docGauge = document.getElementById("gauge");
     const docProgress = document.getElementById("progress");
     const docLog = document.getElementById("log");
@@ -145,7 +147,12 @@
         document.getElementById('answer').value = answer;
     }
 
-    function step(amount, newStepsAmt) {
+    function step(amount, newStepsAmt, skipInterval) {
+        if (skipInterval){
+            amount *= skipInterval;
+            if (delaySkip++ % skipInterval !== 0)
+                return Promise.resolve();
+        }
         if (!stopNow) {
             docLog.scrollTop = docLog.scrollHeight;
             if (amount != null) {
