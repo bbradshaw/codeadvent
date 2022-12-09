@@ -24,26 +24,14 @@ async function solve2(input, step){
 }
 
 async function animate2(nav, history, step){
-
-	const getChar = (marker, x, y) => {
-		if (history[0][marker][0] == x && history[0][marker][1] == y) return 'H';
-		for (let i=1; i < 10; i++)
-			if (history[i][marker][0] == x && history[i][marker][1] == y) return i;
-		return '.';
-	}
-	
-	for (let i = 0; i < history[0].length; i++){
-		let buf = [];
-		for (let y = nav.bounds_y[1]; y >= nav.bounds_y[0]; y--){
-			buf.push([]);
-			let bufpos = Math.abs(y - nav.bounds_y[1]);
-			for (let x = nav.bounds_x[0]; x <= nav.bounds_x[1]; x++){
-				buf[bufpos].push(getChar(i, x, y));
-			}
-			buf[bufpos] = buf[bufpos].join('');
-	}
-		gauge(buf.join('<br />\n'));
-
+	for (let h = 0; h < history[0].length; h++){
+		let txt = nav.createTextRepresentationFromBounds( (x, y) => {
+			if (history[0][h][0] == x && history[0][h][1] == y) return 'H';
+			for (let i=1; i < 10; i++)
+				if (history[i][h][0] == x && history[i][h][1] == y) return i;
+			return '.';
+		});
+		gauge(txt);
 		await step(0);
 	}
 }

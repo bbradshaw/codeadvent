@@ -72,10 +72,10 @@ class Grid {
         if (x >= this.width || x < 0) return `x = ${x} out of bounds 0 - ${this.width}`;
         if (y >= this.height || y < 0) return `y = ${y} out of bounds 0 - ${this.height}`
     }
-    
-    *raycast (x, y, next) {
+
+    *raycast(x, y, next) {
         [x, y] = next(x, y);
-        while (!this._outofbounds(x,y)){
+        while (!this._outofbounds(x, y)) {
             yield [x, y, this.at(x, y)];
             [x, y] = next(x, y);
         }
@@ -192,8 +192,8 @@ class Navigation {
 
     move_by_vec(start, vec) {
         let pos = [...start];
-        pos[0] += (vec.direction[0] * vec.magnitude);
-        pos[1] += (vec.direction[1] * vec.magnitude);
+        pos[0] += vec[0];
+        pos[1] += vec[1];
         this._expand_bounds(pos);
         return pos;
     }
@@ -209,18 +209,11 @@ class Navigation {
         let dx = pos2[0] - pos1[0];
         let dy = pos2[1] - pos1[1];
         const div = gcd(Math.abs(dx), Math.abs(dy));
-        if (div == 0) {
-            dx = dx / (Math.abs(dx) || 1);
-            dy = dy / (Math.abs(dy) || 1);
-        }
-        else {
+        if (div !== 0) {
             dx = dx / div;
             dy = dy / div;
         }
-
-        return {
-            magnitude: 1, direction: [dx, dy]
-        }
+        return [dx, dy]
     }
 
     static equal_pos(pos1, pos2) {
@@ -243,8 +236,25 @@ class Navigation {
         return Math.abs(pos2[0] - pos1[0]) + Math.abs(pos2[1] - pos1[1]);
     }
 
-    static chebyshev(pos1, pos2){
+    static chebyshev(pos1, pos2) {
         return Math.max(Math.abs(pos2[0] - pos1[0]), Math.abs(pos1[1] - pos2[1]));
+    }
+
+    static clamped_pos(pos) {
+        return [pos[0] / (Math.abs(pos[0]) || 1), pos[1] / (Math.abs(pos[1]) || 1)];
+    }
+
+    createTextRepresentationFromBounds(fn) {
+        let buf = [];
+        for (let y = this.bounds_y[1]; y >= this.bounds_y[0]; y--) {
+            buf.push([]);
+            let bufpos = Math.abs(y - this.bounds_y[1]);
+            for (let x = this.bounds_x[0]; x <= this.bounds_x[1]; x++) {
+                buf[bufpos].push(fn(x, y));
+            }
+            buf[bufpos] = buf[bufpos].join('');
+        }
+        return buf.join('<br />\n');
     }
 }
 
