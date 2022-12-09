@@ -242,6 +242,10 @@ class Navigation {
     static manhattan(pos1, pos2) {
         return Math.abs(pos2[0] - pos1[0]) + Math.abs(pos2[1] - pos1[1]);
     }
+
+    static chebyshev(pos1, pos2){
+        return Math.max(Math.abs(pos2[0] - pos1[0]), Math.abs(pos1[1] - pos2[1]));
+    }
 }
 
 function newCounter() {
