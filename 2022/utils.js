@@ -36,14 +36,15 @@ function set_intersect(s1, s2) {
 function memod_coord2d_fn(fn) {
     let pos_cache = {};
 
-    return function (coords) {
+    return function (x, y) {
         let rs;
-        if (pos_cache[coords[0]] && (rs = pos_cache[coords[0]][coords[1]]))
+        if (pos_cache[x] && (rs = pos_cache[x][y]))
             return rs;
         else {
-            rs = fn.bind(this)(coords);
-            !pos_cache[coords[0]] ? pos_cache[coords[0]] = {} : void 0;
-            pos_cache[coords[0]][coords[1]] = rs;
+            rs = fn.bind(this)(x,y);
+            if (!pos_cache[x])
+                pos_cache[x] = {};
+            pos_cache[x][y] = rs;
             return rs;
         }
     };
