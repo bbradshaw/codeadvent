@@ -103,6 +103,7 @@
     let processingLine = 0;
     let totalSteps = parseFloat(document.getElementById('meta_linetotal').innerHTML) || 0;  // default to lines in input
     let delaySkip = 0;
+    let nextGauge = '';
     const docGauge = document.getElementById("gauge");
     const docProgress = document.getElementById("progress");
     const docLog = document.getElementById("log");
@@ -132,7 +133,7 @@
     }
 
     function gauge(g) {
-        docGauge.innerHTML = g;
+        nextGauge = g;
     }
     function log(msg) {
         let n = document.createElement("div");
@@ -141,7 +142,7 @@
     }
     
     function showAnswer(answer) {
-        gauge('');
+        docGauge.innerHTML = '';
         docProgress.style.display = 'none';
         document.getElementById('userStop').disabled = true;
         document.getElementById('answer').value = answer;
@@ -158,6 +159,10 @@
             if (amount != null) {
                 processingLine += amount;
                 showLineCompletion(processingLine, newStepsAmt);
+                if (nextGauge !== ''){
+                    docGauge.innerHTML = nextGauge;
+                    nextGauge = '';
+                }
             }
             else {
                 showLineCompletion(undefined, newStepsAmt);
