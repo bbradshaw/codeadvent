@@ -78,9 +78,11 @@ function drawPadlock(value) {
 	const radius = Math.min(centerX, centerY) - 20;
 
 	ctx.beginPath();
+	ctx.lineWidth = 1;
 	ctx.strokeStyle = '#000000';
 	ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
 	ctx.stroke();
+
 	for (let i = 0; i < 100; i++) {
 		const angle = (i / 100) * 2 * Math.PI - Math.PI / 2;
 		const x = centerX + radius * Math.cos(angle);
@@ -94,7 +96,12 @@ function drawPadlock(value) {
 
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
 	ctx.beginPath();
-	ctx.strokeStyle = 'red';
+	ctx.lineWidth = 4;
+	if (value < 1.0 && value > -1.0) {
+		ctx.strokeStyle = 'red';
+	} else {
+		ctx.strokeStyle = '#000000';
+	}
 	ctx.moveTo(centerX, centerY);
 	ctx.lineTo(centerX, centerY - radius + 20);
 	ctx.stroke();
