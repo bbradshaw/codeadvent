@@ -44,32 +44,25 @@ async function solve2(input, step) {
 	for (let i = 0; i < data.length; i++) {
 		const value = data[i];
 		await visualize(pointer, value);
+		const before = pointer;
 		pointer += value;
-		if (value < 0) {
-			if (pointer < 0) {
-				const trips = Math.ceil(-value / 100);
-				score += trips;
-				if (pointer - value == 0) {
-					score -= 1;
-				}
-				pointer = modulo(100 + pointer, 100);
-
-
-			}
-		} else {
-			if (pointer >= 100) {
-				const trips = Math.ceil(value / 100);
-				score += trips;
-				pointer = pointer % 100;
-			}
+		if (value > 0) {
+			score += Math.floor(pointer / 100) - Math.floor(before / 100);
+		} else if (value < 0) {
+			score += Math.floor((before - 1) / 100) - Math.floor((pointer - 1) / 100);
 		}
-
+		if (pointer < 0) {
+			pointer = 100 - (-pointer % 100);
+		}
+		if (pointer >= 100) {
+			pointer = pointer % 100;
+		}
 
 		gauge(`${value} -> ${pointer}`);
 		await step(1, data.length);
 	}
 
-	showAnswer(score);
+	showAnswer(score); // 6496
 }
 
 function drawPadlock(value) {
