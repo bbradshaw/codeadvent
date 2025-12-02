@@ -77,7 +77,6 @@ class Visualizer {
     }
 
     mark(starting_data, found_number, score) {
-        this.score = score;
         const this_data = this.visualized_data.find(d => d.value.start === starting_data.start && d.value.end === starting_data.end);
         if (!this_data) {
             return;
@@ -90,6 +89,7 @@ class Visualizer {
             start_y: this_data.top + 10 + this.last_flying_number_y,
             y: this_data.top + 10 + this.last_flying_number_y,
             end_y: this.size.height / 2 + 25,
+            score: score,
             animated: {
                 start_time: document.timeline.currentTime,
                 end_time: document.timeline.currentTime + stepDelay*1.2,
@@ -142,6 +142,7 @@ class Visualizer {
             const y_pixel_move = (number.end_y - number.start_y) * animated_progress;
             number.y = number.start_y + y_pixel_move;
             if (animated_progress === 1) {
+                this.score = number.score;
                 return false;
             }
             return true;
