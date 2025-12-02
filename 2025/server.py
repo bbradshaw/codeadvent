@@ -30,7 +30,7 @@ def day(day):
         abort(404)
     return render_template("template.html", 
         day=f"{day:02}",
-        year=2022,
+        year=2025,
         input=inp, 
         linetotal=linetotal)
 

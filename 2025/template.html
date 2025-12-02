@@ -118,6 +118,7 @@
         document.getElementById("input").value = lastInput;
         document.getElementById("restoreOriginalInput").style.display = 'initial';
     }
+    changeDelay(document.getElementById('stepDelay'));
 
     function getInput() {
         const curVal = document.getElementById("input").value.trimEnd();
