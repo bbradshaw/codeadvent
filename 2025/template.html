@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>AOC {{ year }}</title>
+    <style>
+        #gauge {
+            min-height: 1em;
+            min-width: 1em;
+            background-color: lightblue;
+            font-family:'Courier New', Courier, monospace;
+        }
+
+        #log {
+            margin: 1em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-y: scroll;
+            max-height:70vh;
+        }
+
+        @keyframes redFade {
+            0% {
+                color: red
+            }
+
+            100% {
+                color: black
+            }
+        }
+
+        #log div {
+            animation-name: redFade;
+            animation-duration: 0.5s;
+        }
+
+        .metadata {
+            display: none;
+        }
+
+        #progress {
+            display: none;
+        }
+
+        .centered {
+            text-align: center;
+        }
+
+        .panel {
+            padding: 1em;
+            margin: 1.5em 0em;
+            border-radius: 18px;
+            border: 2px solid #73AD21;
+        }
+
+        .panel div {
+            margin-top: 0.25em;
+        }
+        
+        #restoreOriginalInput{
+            display:none;
+        }
+
+        #input{
+            max-height:40vh;
+            overflow-y: scroll;
+        }
+    </style>
+    <script src="/script/utils.js"></script>
+    <script src="/script/{{ day }}/solve1.js"></script>
+    <script src="/script/{{ day }}/solve2.js"></script>
+</head>
+
+<body>
+    <h3 class='centered'>Day {{ day }}</h3>
+
+    <div id='panel' class='panel'>
+        <div id='buttons'>
+            <button onclick='doSolve(1)'>Solve part 1</button>
+            <button onclick='doSolve(2)'>Solve part 2</button>
+
+            Step Delay<input id='stepDelay' value='0.5' onchange='changeDelay(this)' />
+            <button id='userStop' onclick='userStop()' disabled>Stop Processing</button>
+            <button onclick='clearLog()'>Clear Log</button>
+        </div>
+        <div>Answer:<input id='answer' readonly></input></div>
+    </div>
+    <div>
+        <progress id='progress'></progress>
+    </div>
+    <div id='gauge'></div>
+    <canvas id='canvas' style='display:none' height=800 width=1024></canvas>
+    <div id='log'></div>
+    <div id='meta_linetotal' class='metadata'>{{ linetotal }}</div>
+    <button id='toggleInput' onclick='toggleInput()'>Show Input</button>
+    <button id='restoreOriginalInput' onclick='restoreOriginalInput()'>Restore Problem Input</button>
+    
+    <textarea id='input' cols=80 rows=120 style='display:none'>{{ input }}</textarea>
+</body>
+<script>
+    let stopNow = false;
+    let stepDelay = 0.5;
+    let part1Answer = null;
+    let processingLine = 0;
+    let totalSteps = parseFloat(document.getElementById('meta_linetotal').innerHTML) || 0;  // default to lines in input
+    let delaySkip = 0;
+    let nextGauge = '';
+    const docGauge = document.getElementById("gauge");
+    const docProgress = document.getElementById("progress");
+    const docLog = document.getElementById("log");
+    
+    const storageKey = "{{year}}:{{day}}:";
+    if (!sessionStorage.getItem(storageKey+'originalInput'))
+        sessionStorage.setItem(storageKey+'originalInput', document.getElementById("input").value);
+
+    let lastInput = sessionStorage.getItem(storageKey+'lastUsedInput');
+
+    if (lastInput && window.sessionStorage.getItem(storageKey+"originalInput") !== lastInput){
+        document.getElementById("input").value = lastInput;
+        document.getElementById("restoreOriginalInput").style.display = 'initial';
+    }
+
+    function getInput() {
+        const curVal = document.getElementById("input").value.trimEnd();
+
+        window.sessionStorage.setItem(storageKey+'lastUsedInput', curVal);
+        return curVal;
+    }
+
+    function restoreOriginalInput(){
+        window.sessionStorage.removeItem(storageKey+'lastUsedInput');
+        document.getElementById("input").value = window.sessionStorage.getItem(storageKey+"originalInput");
+        document.getElementById("restoreOriginalInput").style.display = 'none';
+    }
+
+    function gauge(g) {
+        nextGauge = g;
+    }
+    function log(msg) {
+        let n = document.createElement("div");
+        n.innerHTML = msg;
+        docLog.append(n);
+    }
+    
+    function showAnswer(answer) {
+        docGauge.innerHTML = '';
+        docProgress.style.display = 'none';
+        document.getElementById('userStop').disabled = true;
+        document.getElementById('answer').value = answer;
+    }
+
+    function step(amount, newStepsAmt, skipInterval) {
+        if (skipInterval){
+            amount *= skipInterval;
+            if (delaySkip++ % skipInterval !== 0)
+                return Promise.resolve();
+        }
+        if (!stopNow) {
+            docLog.scrollTop = docLog.scrollHeight;
+            if (amount != null) {
+                processingLine += amount;
+                showLineCompletion(processingLine, newStepsAmt);
+                if (nextGauge !== ''){
+                    docGauge.innerHTML = nextGauge;
+                    nextGauge = '';
+                }
+            }
+            else {
+                showLineCompletion(undefined, newStepsAmt);
+            }
+            return new Promise(resolve => {
+                setTimeout(resolve, stepDelay);
+            });
+        }
+        stopNow = false;
+        return Promise.reject(new UserCancelError("User cancelled."));
+    }
+    function changeDelay(t) {
+        stepDelay = parseInt(t.value);
+    }
+    function userStop() {
+        stopNow = true;
+    }
+    function doSolve(n) {
+        processingLine = 0;
+        document.getElementById('userStop').disabled = false;
+        document.getElementById('answer').value = '';
+        const handler = (e) => {
+            if (e instanceof UserCancelError) {
+                log("User cancelled");
+                document.getElementById('userStop').disabled = true;
+                docProgress.style.display = 'none';
+            }
+            else {
+                log(e);
+                document.getElementById('userStop').disabled = true;
+                docProgress.style.display = 'none';
+                throw e;
+            }
+        };
+
+        switch (n) {
+            case 1:
+                part1Answer = null;
+                solve1(getInput(), step)
+                    .then(() =>
+                        part1Answer = document.getElementById('answer').value)
+                    .catch(handler);
+                break;
+            case 2:
+                solve2(getInput(), step).catch(handler);
+                break;
+        }
+    }
+    function clearLog() {
+        document.getElementById('log').innerHTML = '';
+        document.getElementById('canvas').style.display = 'none';
+    }
+    function toggleInput() {
+        let i = document.getElementById('input');
+        let b = document.getElementById("toggleInput");
+        if (i.style.display === 'none') {
+            b.innerText = "Hide Input";
+            i.style.display = 'inherit';
+        }
+        else {
+            b.innerText = "Show Input";
+            i.style.display = 'none';
+        }
+    }
+
+    function showLineCompletion(lineno, newStepsAmt) {
+        if (newStepsAmt != null) totalSteps = newStepsAmt;
+        docProgress.style.display = 'inline';
+        if (lineno != null) {
+            docProgress.max = totalSteps;
+            docProgress.value = lineno;
+        }
+        else {
+            docProgress.removeAttribute('value');
+        }
+    }
+
+    async function getPart1AnswerForPart2() {
+        if (part1Answer !== null) {
+            return part1Answer;
+        }
+        log('solving part 1 first');
+        await solve1(getInput(), step);
+        part1Answer = document.getElementById('answer').value;
+        return part1Answer;
+    }
+</script>
+
+</html>
