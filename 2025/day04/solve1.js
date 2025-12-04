@@ -18,7 +18,7 @@ async function solve1(input, step) {
 		return count.toString();
 	});
 	const visualizer = new Visualizer(data);
-	await visualizer.animate_solution(solutions);
+	await visualizer.animate_solution(solutions[Symbol.iterator]());
 	showAnswer(answer);
 }
 
@@ -27,6 +27,7 @@ class Visualizer {
 		init();
 		this.visual_div = document.getElementById('canvas');
 		this.cell_grid = {};
+		this.height = start_data.height;
 
 		start_data.d2array.forEach((row, y) => {
 			const rowDiv = document.createElement('div');
@@ -41,8 +42,7 @@ class Visualizer {
 		});
 	}
 
-	async animate_solution(new_data) {
-		const iterator = new_data[Symbol.iterator]();
+	async animate_solution(iterator) {
 		let lasty = 0;
 		while (true) {
 			let nxt = iterator.next();
@@ -64,7 +64,7 @@ class Visualizer {
 			}
 
 			if (y != lasty) {
-				await step(1, new_data.width * new_data.height);
+				await step(1, this.height);
 				lasty = y;
 			}
 		}
