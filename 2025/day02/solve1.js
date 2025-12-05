@@ -119,7 +119,6 @@ class Visualizer {
     }
 
     animate(time) {
-        console.log(time);
         for (const data of this.visualized_data) {
             if (data.animation.target === null) {
                 continue;
