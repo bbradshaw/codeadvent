@@ -73,6 +73,9 @@ class Visualizer {
 		for (const beam of beams) {
 			const cellSpan = document.getElementById(`cell-${beam.x}-${beam.y}`);
 			cellSpan.innerHTML = '|';
+			let heat = Math.floor(Math.log2(beam.count || 1) * 6);
+			let color = `#25${(255 - Math.min(255, heat)).toString(16).padStart(2, '0')}00`;
+			cellSpan.style.backgroundColor = color;
 		}
 	}
 }
