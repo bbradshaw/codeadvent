@@ -1,4 +1,4 @@
-async function solve2(input, step) {
+async function solve1(input, step) {
 	let columns = [];
 	let n_cols = null;
 	for (const line of input.split("\n")) {

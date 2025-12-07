@@ -2,20 +2,22 @@ from flask import Flask, render_template, send_from_directory, send_file, abort,
 import datetime, os
 app = Flask("AOC server", template_folder=".")
 
+YEAR = 2022
+
 @app.route("/")
 def index():
     html = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>AOC 2021</title>
+    <title>AOC {{ year }}</title>
     </head><body><h1>AOC {{ year }}</h1><ul>
     {% for i in range(1, day) %}
     <li><a href='/day/{{i}}'>Day {{i}}</a>   --  <a href='https://adventofcode.com/{{ year }}/day/{{ i }}'>link to problem</a></li>
     {% endfor %}</ul>
     </body></html>"""
     now = datetime.datetime.now()
-    return render_template_string(html, day=max(now.day+1, 25), year=now.year)
+    return render_template_string(html, day=max(now.day+1, 25), year=YEAR)
 
 @app.route("/day/<int:day>")
 def day(day):
@@ -36,7 +38,7 @@ def day(day):
 
 @app.route("/script/utils.js")
 def utils():
-    return send_file(os.path.join(app.root_path, 'utils.js'), cache_timeout=1)
+    return send_file(os.path.join(app.root_path, 'utils.js'))
 
 @app.route("/assets/<name>.png")
 def png(name):
@@ -44,4 +46,4 @@ def png(name):
 
 @app.route("/script/<int:day>/<name>")
 def script(day, name):
-    return send_from_directory(os.path.join(app.root_path, f"day{day:02}"), name, cache_timeout=1)
+    return send_from_directory(os.path.join(app.root_path, f"day{day:02}"), name)
